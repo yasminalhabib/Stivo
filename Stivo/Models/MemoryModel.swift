@@ -19,3 +19,21 @@ struct SelectedImage: Identifiable {
     let id = UUID()
     let image: UIImage
 }
+enum Frequency: String, CaseIterable, Identifiable {
+    case daily = "Daily"
+    case weekly = "Weekly"
+    case monthly = "Monthly"
+
+    var id: String { rawValue }
+}
+
+struct Goal: Identifiable {
+    let id = UUID()
+    var title: String
+    var description: String
+    var startDate: Date
+    var endDate: Date
+    var frequency: Frequency
+    var isCompleted: Bool = false
+}
+
