@@ -1,6 +1,7 @@
 {
   "images" : [
     {
+      "filename" : "StivoIcon-iOS-Default-1024x1024@1x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -12,6 +13,7 @@
           "value" : "dark"
         }
       ],
+      "filename" : "StivoIcon-iOS-Default-1024x1024@1x 1.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -23,6 +25,7 @@
           "value" : "tinted"
         }
       ],
+      "filename" : "StivoIcon-iOS-Default-1024x1024@1x 2.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -76,6 +79,18 @@
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "512x512"
+    },
+    {
+      "filename" : "AppIcon 1.png",
+      "unassigned" : true
+    },
+    {
+      "filename" : "AppIcon 2.png",
+      "unassigned" : true
+    },
+    {
+      "filename" : "AppIcon.png",
+      "unassigned" : true
     }
   ],
   "info" : {

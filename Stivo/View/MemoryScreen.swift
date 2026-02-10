@@ -10,7 +10,8 @@ import UIKit
 
 // MARK: - Main Screen
 struct MemoryScreen: View {
-
+    @ObservedObject var viewModel: DashboardViewModel
+     @Environment(\.dismiss) var dismiss
     @StateObject private var vm = MemoryViewModel()
 
     var body: some View {
@@ -29,12 +30,14 @@ struct MemoryScreen: View {
                         .frame(height: 160)
                         .padding(.bottom, -35)
                 }
-
+                .navigationBarBackButtonHidden(true) 
                 VStack(spacing: 0) {
                     // Top bar
+                    
                     HStack {
+                        
                         Button {
-                            // لاحقًا لو فيه رجوع
+                            dismiss() // لاحقًا لو فيه رجوع
                         } label: {
                             Image("back_arrow")
                                 .resizable()
@@ -400,6 +403,6 @@ struct ImagePicker: UIViewControllerRepresentable {
     }
 }
 
-#Preview {
-    MemoryScreen()
-}
+//#Preview {
+//    MemoryScreen()
+//}
