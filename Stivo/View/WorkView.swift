@@ -6,7 +6,7 @@
 //
 import SwiftUI
 
-struct workView: View {
+struct WorkView: View {
 
     @State private var showAddGoal = false
     @State private var goals: [Goal] = []
@@ -180,7 +180,7 @@ struct workView: View {
     }
 }
 #Preview {
-    workView()
+    WorkView()
 }
 
 

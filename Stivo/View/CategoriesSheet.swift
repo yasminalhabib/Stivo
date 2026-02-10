@@ -6,9 +6,10 @@
 //
 import SwiftUI
 
-// MARK:
+// MARK: - CategoriesSheet (Main)
 struct CategoriesSheet: View {
     @State private var showSheet = true
+    @State private var selectedRoute: CategoryRoute?
 
     var body: some View {
         ZStack {
@@ -16,10 +17,39 @@ struct CategoriesSheet: View {
         }
         .sheet(isPresented: $showSheet) {
             CategoriesSheetView { category in
-                print("Tapped: \(category.title)")
+                selectedRoute = CategoryRoute(from: category)
+                showSheet = false
             }
             .presentationDetents([.height(480)])
             .presentationDragIndicator(.hidden)
+        }
+        .fullScreenCover(item: $selectedRoute) { route in
+            switch route {
+            case .sport:
+                SportView()
+            case .work:
+                WorkView()
+            case .care:
+                CareView()
+            case .finance:
+                FinanceView()
+            }
+        }
+    }
+}
+
+// MARK: - Navigation Route
+enum CategoryRoute: Identifiable {
+    case sport, work, care, finance
+    var id: String { String(describing: self) }
+
+    init?(from item: CategoryItem) {
+        switch item.title {
+        case "Sport": self = .sport
+        case "Work": self = .work
+        case "Care": self = .care
+        case "Finance": self = .finance
+        default: return nil
         }
     }
 }
@@ -56,7 +86,7 @@ struct CategoriesSheetView: View {
                                  size: CGSize(width: cardW, height: workH),
                                  onSelect: onSelect)
                 }
-                .frame(width: cardW, alignment: .center)
+                .frame(width: cardW)
 
                 VStack(spacing: spacing) {
                     CategoryCard(item: .finance,
@@ -67,25 +97,22 @@ struct CategoriesSheetView: View {
                                  size: CGSize(width: cardW, height: careH),
                                  onSelect: onSelect)
                 }
-                .frame(width: cardW, alignment: .center)
+                .frame(width: cardW)
             }
-            .frame(maxWidth: .infinity, alignment: .center)
+            .frame(maxWidth: .infinity)
             .padding(.horizontal, sidePadding)
             .padding(.top, 6)
-
         }
         .padding(.top, 6)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(
             Color(.systemGray6)
-                .ignoresSafeArea(edges: .bottom) // 🔥
+                .ignoresSafeArea(edges: .bottom)
         )
-
     }
 }
 
-
-// MARK: - Card Button (text centered + same icons + same sizes)
+// MARK: - Category Card
 struct CategoryCard: View {
     let item: CategoryItem
     let size: CGSize
@@ -96,16 +123,13 @@ struct CategoryCard: View {
             onSelect(item)
         } label: {
             ZStack {
-                // الخلفية
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .fill(item.bg)
 
-                // ✅
                 Text(item.title)
                     .font(.system(size: 22, weight: .medium))
                     .foregroundStyle(.white)
 
-                // ✅ الأيقونة ثابتة فوق
                 VStack {
                     HStack {
                         ZStack {
@@ -113,7 +137,7 @@ struct CategoryCard: View {
                                 .fill(Color.white.opacity(0.95))
                                 .frame(width: 44, height: 36)
 
-                            Image(systemName: item.icon) // ⬅️ بدون تغيير
+                            Image(systemName: item.icon)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(Color.black.opacity(0.75))
                         }
@@ -123,13 +147,13 @@ struct CategoryCard: View {
                 }
                 .padding(14)
             }
-            .frame(width: size.width, height: size.height) // ⬅️
+            .frame(width: size.width, height: size.height)
         }
         .buttonStyle(.plain)
     }
 }
 
-// MARK: - Data (NO icon changes)
+// MARK: - Category Data
 struct CategoryItem: Identifiable {
     let id = UUID()
     let title: String
@@ -161,7 +185,9 @@ struct CategoryItem: Identifiable {
     )
 }
 
+// MARK: - Preview
 #Preview {
     CategoriesSheet()
 }
+
 
