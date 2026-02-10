@@ -85,5 +85,5 @@ struct AddGoal: View {
     }
 }
 #Preview {
-    HomeView()
+    CareView()
 }

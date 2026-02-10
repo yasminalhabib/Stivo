@@ -1,12 +1,13 @@
 //
-//  DetailsView.swift
+//  FinanceView.swift
 //  Stivo
 //
 //  Created by noura on 10/02/2026.
 //
+
 import SwiftUI
 
-struct HomeView: View {
+struct FinanceView: View {
 
     @State private var showAddGoal = false
     @State private var goals: [Goal] = []
@@ -27,9 +28,9 @@ struct HomeView: View {
 
             // النصوص العلوية
             VStack(alignment: .leading, spacing: 8) {
-                Text("Care").font(.system(size: 26, weight: .bold)).foregroundColor(Color("Color"))
+                Text("Finance").font(.system(size: 26, weight: .bold)).foregroundColor(Color("Color"))
                 
-                Text("Self-care starts with small actions that create meaningful change")
+                Text("Finance-care starts with small actions that create meaningful change")
                     .font(.system(size: 16))
                     .foregroundColor(.gray)
                     .frame(maxWidth: 360, alignment: .leading)
@@ -180,6 +181,7 @@ struct HomeView: View {
     }
 }
 #Preview {
-    HomeView()
+    FinanceView()
 }
+
 
