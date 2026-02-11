@@ -79,18 +79,6 @@
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "512x512"
-    },
-    {
-      "filename" : "AppIcon 1.png",
-      "unassigned" : true
-    },
-    {
-      "filename" : "AppIcon 2.png",
-      "unassigned" : true
-    },
-    {
-      "filename" : "AppIcon.png",
-      "unassigned" : true
     }
   ],
   "info" : {
