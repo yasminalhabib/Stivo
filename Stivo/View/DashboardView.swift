@@ -9,40 +9,54 @@ import SwiftUI
 
 struct DashboardView: View {
     
-    @State private var selectedCard: String? = nil
-    @State private var showSheet = false
-    
     var body: some View {
-        ZStack {
-            
-            Image("bk2")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 25) {
-                    
-                    Text("Daily Actions")
-                        .font(.title)
-                        .bold()
-                        .padding(.top, 20)
-                    
-                    ForEach(["Sport", "Work", "Finance", "Care"], id: \.self) { title in
-                        Button(action: {
-                            selectedCard = title
-                            showSheet = true
-                        }) {
-                            ActionCard(title: title, progress: 1.00)
+        NavigationStack {
+            ZStack {
+                
+                Image("bk2")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 25) {
+                        
+                        Text("Daily Actions")
+                            .font(.title)
+                            .bold()
+                            .padding(.top, 20)
+                        
+                        ForEach(["Sport", "Work", "Finance", "Care"], id: \.self) { title in
+                            
+                            NavigationLink(destination: destinationView(for: title)) {
+                                ActionCard(title: title, progress: 1.00)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            
                         }
-                        .buttonStyle(PlainButtonStyle())
+                        
                     }
-                    
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 90)
+                    .padding(.bottom, 50)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 90)
-                .padding(.bottom, 50)
             }
+        }
+    }
+    
+    @ViewBuilder
+    func destinationView(for title: String) -> some View {
+        switch title {
+        case "Sport":
+            SportView()
+        case "Work":
+            WorkView()
+        case "Finance":
+            FinanceView()
+        case "Care":
+            CareView()
+        default:
+            Text("No View")
         }
     }
 }
@@ -101,25 +115,6 @@ struct ProgressRing: View {
             }
             .frame(width: 60, height: 60)
         }
-    }
-}
-
-struct CardDetailView: View {
-    
-    var title: String
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("\(title) Details")
-                .font(.largeTitle)
-                .bold()
-            
-            Text("Here you can add all details about \(title) actions, progress, tips, etc.")
-                .padding()
-            
-            Spacer()
-        }
-        .padding()
     }
 }
 
