@@ -4,35 +4,40 @@
 //
 //  Created by aisha alh on 23/08/1447 AH.
 //
-
 import SwiftUI
+
 struct MainDashboardView: View {
+    
     @StateObject private var viewModel = DashboardViewModel()
     @State private var selectedPeriod: String = "Daily Actions"
     @State private var showCategoriesSheet = false
     
     var body: some View {
-        NavigationStack{
+        NavigationStack {
+            
             ZStack {
                 
-                // الخلفية من Assets
                 Color("background")
                     .ignoresSafeArea()
+                
+                // الخلفية يسار
                 VStack {
                     Spacer()
                     
                     HStack {
-                        Image("pp")   // اسم الصورة في Assets
+                        Image("pp")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 140)
-                            .opacity(0.6)   // عشان تصير خفيفة
+                            .opacity(0.6)
                             .padding(.bottom, 170)
                         
                         Spacer()
                     }
-                    .padding(.bottom, 40)   // تنزلها تحت شوي
+                    .padding(.bottom, 40)
                 }
+                
+                // الخلفية يمين
                 VStack {
                     Spacer()
                     
@@ -47,16 +52,20 @@ struct MainDashboardView: View {
                     }
                     .padding(.bottom, 400)
                 }
-                ScrollView{
-                    
+                
+                ScrollView {
                     
                     VStack(alignment: .center, spacing: 20) {
+                        
                         DashboardCard(
-                            progress: Double(viewModel.completionPercentage(for: selectedPeriod)) / 100, title: "daily actions"
+                            progress: Double(viewModel.completionPercentage(for: selectedPeriod)) / 100,
+                            title: selectedPeriod
                         )
+                        
                         PeriodSelector(selectedPeriod: $selectedPeriod)
-                            .frame(width:100,alignment: .init(horizontal: .center, vertical: .center))
-                         .frame(maxWidth: 289, alignment: .leading)
+                            .frame(width: 100)
+                            .frame(maxWidth: 289, alignment: .leading)
+                        
                         let actions = {
                             switch selectedPeriod {
                             case "Weekly Actions":
@@ -67,8 +76,8 @@ struct MainDashboardView: View {
                                 return viewModel.dailyActions
                             }
                         }()
+                        
                         if actions.isEmpty {
-                            
                             
                             Image("girl")
                                 .resizable()
@@ -78,6 +87,7 @@ struct MainDashboardView: View {
                             Text("Start your goals journey!")
                                 .font(.system(size: 16, weight: .bold))
                                 .padding(.top, 10)
+                            
                             Text("All your goals, organized in one place. We’re here to help you stay on track and grow ✨")
                                 .font(.custom("Helvetica", size: 12))
                                 .foregroundColor(Color(red: 138/255, green: 136/255, blue: 136/255))
@@ -92,48 +102,26 @@ struct MainDashboardView: View {
                                     .frame(width: 150, height: 50)
                                     .background(Color("Color"))
                                     .foregroundColor(.white)
-                                    .shadow(color: .black.opacity(0.15), radius: 5, y: 4)
                                     .cornerRadius(22)
-                                    .shadow(radius: 5, x: 0, y: 5)
+                                    .shadow(color: .black.opacity(0.15), radius: 5, y: 4)
                             }
-                            
-                            
                         }
                         
                         MemorySection(viewModel: viewModel)
-                        
                     }
-                    
                 }
-                
-                // Floating Plus Button
-                VStack {
-                    Spacer()
-
-                    Button {
-                        showCategoriesSheet = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 55, height: 55)
-                            .background(Color("Color"))
-                            .clipShape(Circle())
-                            .shadow(color: .black.opacity(0.15), radius: 5, y: 3)
-                    }
-                    .padding(.bottom, 25)
-                }
-                
             }
+            
+            // 🔥 استدعاء الشيت هنا
             .sheet(isPresented: $showCategoriesSheet) {
-                CategoriesSheetView { selectedCategory in
-                    print(selectedCategory)
+                CategoriesSheetView { category in
+                    print(category.title)
                 }
-                
+                .presentationDetents([.height(400)])
+                .presentationDragIndicator(.hidden)
             }
         }
     }
-    
 }
 #Preview {
     MainDashboardView()

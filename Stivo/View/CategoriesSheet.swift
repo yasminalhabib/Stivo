@@ -8,8 +8,8 @@ import SwiftUI
 
 // MARK: - CategoriesSheet (Main)
 struct CategoriesSheet: View {
-    @State private var showSheet = true
-    @State private var selectedRoute: CategoryRoute?
+    @State public var showSheet = true
+    @State public var selectedRoute: CategoryRoute?
 
     var body: some View {
         ZStack {
@@ -20,7 +20,7 @@ struct CategoriesSheet: View {
                 selectedRoute = CategoryRoute(from: category)
                 showSheet = false
             }
-            .presentationDetents([.height(480)])
+            .presentationDetents([.height(400)])
             .presentationDragIndicator(.hidden)
         }
         .fullScreenCover(item: $selectedRoute) { route in

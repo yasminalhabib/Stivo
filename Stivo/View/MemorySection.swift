@@ -24,10 +24,11 @@ struct MemorySection: View {
                     showMemoryScreen = true
                 } label: {
                     Image(systemName: "plus")
-                        .font(.system(size: 25, weight: .bold))
+                    
+                        .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
-                        .frame(width: 39, height: 39)
-                        .background(Color("Color"))
+                        .frame(width: 38, height: 38)
+                        .background((Color(red: 255/255, green: 182/255, blue: 149/255)))
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(0.15), radius: 5, y: 3)
                 }

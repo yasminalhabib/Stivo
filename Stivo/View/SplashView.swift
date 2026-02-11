@@ -14,10 +14,19 @@ struct VideoBackground: UIViewRepresentable {
     func makeUIView(context: Context) -> UIView {
         let view = UIView(frame: .zero)
         
-        let url = Bundle.main.url(forResource: videoName, withExtension: "mp4")!
+        guard let url = Bundle.main.url(forResource: videoName, withExtension: "mp4") else {
+            return view
+        }
         let player = AVPlayer(url: url)
         player.isMuted = true
         player.play()
+        player.actionAtItemEnd = .none
+        
+        // Loop the video
+        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { _ in
+            player.seek(to: .zero)
+            player.play()
+        }
         
         let layer = AVPlayerLayer(player: player)
         layer.videoGravity = .resizeAspectFill
@@ -42,9 +51,28 @@ struct VideoBackground: UIViewRepresentable {
 }
 
 struct SplashView: View {
+    @State private var showMain = false
+    
     var body: some View {
-        VideoBackground(videoName: "bk")
-            .ignoresSafeArea()
+        ZStack {
+            VideoBackground(videoName: "bk")
+                .ignoresSafeArea()
+                .opacity(showMain ? 0 : 1)
+                .animation(.easeInOut(duration: 0.4), value: showMain)
+            
+            if showMain {
+                MainDashboardView()
+                    .transition(.opacity)
+            }
+        }
+        .onAppear {
+            // انتقل بعد 2 ثانية. يمكنك تعديلها حسب رغبتك.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                withAnimation(.easeInOut(duration: 0.4)) {
+                    showMain = true
+                }
+            }
+        }
     }
 }
 
@@ -53,6 +81,7 @@ struct SplashView_Previews: PreviewProvider {
         SplashView()
     }
 }
+
 #Preview {
     SplashView()
 }
