@@ -21,7 +21,7 @@ struct FinanceView: View {
                 Image("Image1").scaledToFit().offset(x: -165, y: -330)
                 Image("Image2").scaledToFit().offset(x: 165, y: -130)
                 Image("blur1").scaledToFit().offset(y: -220)
-                Image("care").resizable().scaledToFit().frame(width: 330).cornerRadius(16).offset(y: -230)
+                Image("Finance").resizable().scaledToFit().frame(width: 330).cornerRadius(16).offset(y: -230)
                 Image("Image3").scaledToFit().offset(x: -120, y: 400)
             }
             .allowsHitTesting(false)
