@@ -9,45 +9,99 @@ import SwiftUI
 
 struct DashboardView: View {
     
-    @State private var selectedCard: String? = nil
-    @State private var showSheet = false
-    
+    // جلب البيانات من UserDefaults
+    @State private var sportGoals: [Goal] = []
+    @State private var workGoals: [Goal] = []
+    @State private var financeGoals: [Goal] = []
+    @State private var careGoals: [Goal] = []
+
     var body: some View {
-        ZStack {
-            
-            Image("bk2")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 25) {
-                    
-                    Text("Daily Actions")
-                        .font(.title)
-                        .bold()
-                        .padding(.top, 20)
-                    
-                    ForEach(["Sport", "Work", "Finance", "Care"], id: \.self) { title in
-                        Button(action: {
-                            selectedCard = title
-                            showSheet = true
-                        }) {
-                            ActionCard(title: title, progress: 1.00)
+        NavigationStack {
+            ZStack {
+                Image("bk2")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 25) {
+                        Text("Daily Actions")
+                            .font(.title)
+                            .bold()
+                            .padding(.top, 20)
+                        
+                        ForEach(["Sport", "Work", "Finance", "Care"], id: \.self) { title in
+                            NavigationLink(destination: destinationView(for: title)) {
+                                ActionCard(title: title, progress: progress(for: title))
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
-                        .buttonStyle(PlainButtonStyle())
+                        
                     }
-                    
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 90)
+                    .padding(.bottom, 50)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 90)
-                .padding(.bottom, 50)
             }
         }
+        .onAppear {
+            loadAllGoals()
+        }
+    }
+    
+    // تحديد الـ View لكل نوع
+    @ViewBuilder
+    func destinationView(for title: String) -> some View {
+        switch title {
+        case "Sport":
+            SportView()
+        case "Work":
+            WorkView()
+        case "Finance":
+            FinanceView()
+        case "Care":
+            CareView()
+        default:
+            Text("No View")
+        }
+    }
+    
+    // حساب النسبة لكل نوع
+    func progress(for title: String) -> Double {
+        let goals: [Goal]
+        switch title {
+        case "Sport": goals = sportGoals
+        case "Work": goals = workGoals
+        case "Finance": goals = financeGoals
+        case "Care": goals = careGoals
+        default: goals = []
+        }
+        
+        guard !goals.isEmpty else { return 0 }
+        let completed = goals.filter { $0.isCompleted }.count
+        return Double(completed) / Double(goals.count)
+    }
+    
+    // جلب كل البيانات من UserDefaults
+    func loadAllGoals() {
+        sportGoals = loadGoals(forKey: "savedSportGoals")
+        workGoals = loadGoals(forKey: "savedWorkGoals")
+        financeGoals = loadGoals(forKey: "savedFinanceGoals")
+        careGoals = loadGoals(forKey: "savedGoals") // Care استخدم هذا المفتاح
+    }
+    
+    func loadGoals(forKey key: String) -> [Goal] {
+        if let data = UserDefaults.standard.data(forKey: key),
+           let decoded = try? JSONDecoder().decode([Goal].self, from: data) {
+            return decoded
+        }
+        return []
     }
 }
 
-//Card
+// ====================
+// Card
+// ====================
 struct ActionCard: View {
     
     var title: String
@@ -55,7 +109,6 @@ struct ActionCard: View {
     
     var body: some View {
         HStack {
-            
             Text(title)
                 .font(.title2)
                 .foregroundColor(.white)
@@ -71,14 +124,15 @@ struct ActionCard: View {
     }
 }
 
-//Progress Ring
+// ====================
+// Progress Ring
+// ====================
 struct ProgressRing: View {
     
     var progress: Double
     
     var body: some View {
         ZStack {
-            
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color.white)
                 .frame(width: 90, height: 90)
@@ -101,25 +155,6 @@ struct ProgressRing: View {
             }
             .frame(width: 60, height: 60)
         }
-    }
-}
-
-struct CardDetailView: View {
-    
-    var title: String
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("\(title) Details")
-                .font(.largeTitle)
-                .bold()
-            
-            Text("Here you can add all details about \(title) actions, progress, tips, etc.")
-                .padding()
-            
-            Spacer()
-        }
-        .padding()
     }
 }
 

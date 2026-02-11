@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "StivoIcon-iOS-Default-1024x1024@1x.png",
+      "filename" : "StivoIcon 2-iOS-Default-1024x1024@1x.jpg",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "StivoIcon-iOS-Default-1024x1024@1x 1.png",
+      "filename" : "StivoIcon 2-iOS-Default-1024x1024@1x 1.jpg",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,6 +25,7 @@
           "value" : "tinted"
         }
       ],
+      "filename" : "StivoIcon 2-iOS-Default-1024x1024@1x 2.jpg",
       "filename" : "StivoIcon-iOS-Default-1024x1024@1x 2.png",
       "idiom" : "universal",
       "platform" : "ios",
