@@ -67,7 +67,13 @@ struct AddGoal: View {
                     frequency: frequency
                 )
                 goals.append(newGoal)
+                
+                NotificationManager.shared.scheduleNotification(for: newGoal)
+                
+                
                 showSheet = false
+                
+                
             } label: {
                 Text("Add goal")
                     .frame(maxWidth: .infinity)
