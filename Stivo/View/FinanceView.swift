@@ -11,14 +11,20 @@ import SwiftUI
 // MARK: - FinanceView
 // ========================
 struct FinanceView: View {
-
+    @Environment(\.dismiss) var dismiss
     @State private var showAddGoal = false
     @State private var goals: [Goal] = []
     @State private var selectedGoal: Goal? = nil
     @AppStorage("hasOpenedFinanceBefore") private var hasOpenedFinanceBefore = false
+    @EnvironmentObject var viewModel: DashboardViewModel
 
     var body: some View {
-        ZStack(alignment: .top) {
+        
+        
+        NavigationStack {
+            ZStack(alignment: .top) {
+            
+            
             Color("background").ignoresSafeArea()
 
             // الصور العلوية
@@ -71,6 +77,18 @@ struct FinanceView: View {
                     }
                 }
             }
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .semibold))
+                }
+            }
         }
         .sheet(isPresented: $showAddGoal) {
             AddGoal(
@@ -81,7 +99,10 @@ struct FinanceView: View {
             .presentationDetents([.large])
         }
         .onAppear { loadGoals() }
-        .onChange(of: goals) { _ in saveGoals() }
+        .onChange(of: goals) { _ in
+            saveGoals()
+            syncGoalsToDashboard()
+        }
     }
 
     var checklistView: some View {
@@ -164,6 +185,13 @@ struct FinanceView: View {
             if !decoded.isEmpty { hasOpenedFinanceBefore = true }
         }
     }
+
+    func syncGoalsToDashboard() {
+        viewModel.financeGoals = goals
+    }
 }
 
-#Preview { FinanceView() }
+#Preview {
+    FinanceView()
+        .environmentObject(DashboardViewModel())
+}

@@ -15,6 +15,7 @@ struct SportView: View {
     @State private var goals: [Goal] = []
     @State private var selectedGoal: Goal? = nil
     @AppStorage("hasOpenedSportBefore") private var hasOpenedSportBefore = false
+    @EnvironmentObject var viewModel: DashboardViewModel
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -82,7 +83,10 @@ struct SportView: View {
             .presentationDetents([.large])
         }
         .onAppear { loadGoals() }
-        .onChange(of: goals) { _ in saveGoals() }
+        .onChange(of: goals) { _ in
+            saveGoals()
+            syncGoalsToDashboard()
+        }
     }
 
     var checklistView: some View {
@@ -167,6 +171,9 @@ struct SportView: View {
             goals = decoded
             if !decoded.isEmpty { hasOpenedSportBefore = true }
         }
+    }
+    func syncGoalsToDashboard() {
+        viewModel.sportGoals = goals
     }
 }
 

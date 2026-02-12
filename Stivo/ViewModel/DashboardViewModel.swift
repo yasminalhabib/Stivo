@@ -12,10 +12,64 @@ struct ActionItem: Identifiable, Equatable {
     let id = UUID()
     var title: String
     var isCompleted: Bool
+    var goalID: UUID?
 }
 
 final class DashboardViewModel: ObservableObject {
- 
+    @Published var sportGoals: [Goal] = []
+    @Published var workGoals: [Goal] = []
+    @Published var financeGoals: [Goal] = []
+    @Published var careGoals: [Goal] = []
+    func addGoal(_ goal: Goal, type: String) {
+           switch type {
+           case "Sport":
+               sportGoals.append(goal)
+           case "Work":
+               workGoals.append(goal)
+           case "Finance":
+               financeGoals.append(goal)
+           case "Care":
+               careGoals.append(goal)
+           default:
+               break
+           }
+        let action = ActionItem(title: goal.title,
+         isCompleted: goal.isCompleted,
+            goalID: goal.id)
+           
+           switch goal.frequency {
+           case .daily:
+               dailyActions.append(action)
+           case .weekly:
+               weeklyActions.append(action)
+           case .monthly:
+               monthlyActions.append(action)
+           }
+       
+       }
+    var sportCompletionPercentage: Int {
+           guard !sportGoals.isEmpty else { return 0 }
+           let done = sportGoals.filter { $0.isCompleted }.count
+           return Int((Double(done) / Double(sportGoals.count)) * 100)
+       }
+
+       var workCompletionPercentage: Int {
+           guard !workGoals.isEmpty else { return 0 }
+           let done = workGoals.filter { $0.isCompleted }.count
+           return Int((Double(done) / Double(workGoals.count)) * 100)
+       }
+
+       var financeCompletionPercentage: Int {
+           guard !financeGoals.isEmpty else { return 0 }
+           let done = financeGoals.filter { $0.isCompleted }.count
+           return Int((Double(done) / Double(financeGoals.count)) * 100)
+       }
+
+       var careCompletionPercentage: Int {
+           guard !careGoals.isEmpty else { return 0 }
+           let done = careGoals.filter { $0.isCompleted }.count
+           return Int((Double(done) / Double(careGoals.count)) * 100)
+       }
     var isNewUser: Bool {
         dailyActions.isEmpty &&
         weeklyActions.isEmpty &&
@@ -97,11 +151,10 @@ final class DashboardViewModel: ObservableObject {
     }
 
     private func loadMemories() {
-        if let saved = UserDefaults.standard.array(forKey: "savedMemories") as? [Data] {
-            memories = saved
-        }
-    }
-
+        if let saved = UserDefaults.standard.object(forKey: "savedMemories") as? [Data] {
+               memories = saved
+           }
+       }
     func addMemory(image: UIImage) {
         if let data = image.jpegData(compressionQuality: 0.8) {
             memories.append(data)

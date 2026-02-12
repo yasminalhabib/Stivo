@@ -15,14 +15,13 @@ struct CategoriesSheet: View {
         ZStack {
             Color.black.opacity(0.15).ignoresSafeArea()
         }
-        .sheet(isPresented: $showSheet) {
-            CategoriesSheetView { category in
-                selectedRoute = CategoryRoute(from: category)
-                showSheet = false
-            }
-            .presentationDetents([.height(400)])
-            .presentationDragIndicator(.hidden)
+       
+        CategoriesSheetView { category in
+            selectedRoute = CategoryRoute(from: category)
+            
         }
+        .presentationDetents([.height(400)])
+              .presentationDragIndicator(.hidden)
         .fullScreenCover(item: $selectedRoute) { route in
             switch route {
             case .sport:

@@ -15,6 +15,8 @@ struct CareView: View {
     // أول دخول فقط
     @AppStorage("hasOpenedCareBefore") private var hasOpenedCareBefore = false
 
+    @EnvironmentObject var viewModel: DashboardViewModel
+
     var body: some View {
         ZStack(alignment: .top) {
             Color("background").ignoresSafeArea()
@@ -100,6 +102,7 @@ struct CareView: View {
         }
         .onChange(of: goals) { _ in
             saveGoals()
+            syncGoalsToDashboard()
         }
     }
 
@@ -223,11 +226,13 @@ struct CareView: View {
             }
         }
     }
+
+    func syncGoalsToDashboard() {
+        viewModel.careGoals = goals
+    }
 }
 
 #Preview {
     CareView()
+        .environmentObject(DashboardViewModel())
 }
-
-
-

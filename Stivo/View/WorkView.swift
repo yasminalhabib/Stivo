@@ -12,6 +12,7 @@ struct WorkView: View {
     @State private var goals: [Goal] = []
     @State private var selectedGoal: Goal? = nil // الهدف للتحرير
     @AppStorage("hasOpenedWorkBefore") private var hasOpenedWorkBefore = false
+    @EnvironmentObject var viewModel: DashboardViewModel
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -79,7 +80,10 @@ struct WorkView: View {
             .presentationDetents([.large])
         }
         .onAppear { loadGoals() }
-        .onChange(of: goals) { _ in saveGoals() }
+        .onChange(of: goals) { _ in
+            saveGoals()
+            syncGoalsToDashboard()
+        }
     }
 
     var checklistView: some View {
@@ -172,8 +176,12 @@ struct WorkView: View {
             if !decoded.isEmpty { hasOpenedWorkBefore = true }
         }
     }
+    func syncGoalsToDashboard() {
+        viewModel.workGoals = goals
+    }
 }
 
 #Preview {
     WorkView()
+        .environmentObject(DashboardViewModel())
 }

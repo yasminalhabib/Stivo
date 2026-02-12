@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DashboardView: View {
-    
+    @EnvironmentObject var viewModel: DashboardViewModel
     // جلب البيانات من UserDefaults
     @State private var sportGoals: [Goal] = []
     @State private var workGoals: [Goal] = []
