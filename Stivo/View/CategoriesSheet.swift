@@ -6,33 +6,73 @@
 //
 import SwiftUI
 
-// MARK: - CategoriesSheet (Main)
+// MARK: - CategoriesSheet (Presented as a SHEET from MainDashboardView)
 struct CategoriesSheet: View {
-    @State public var showSheet = true
-    @State public var selectedRoute: CategoryRoute?
+    @State private var selectedRoute: CategoryRoute?
 
     var body: some View {
         ZStack {
             Color.black.opacity(0.15).ignoresSafeArea()
         }
-       
+
         CategoriesSheetView { category in
             selectedRoute = CategoryRoute(from: category)
-            
         }
         .presentationDetents([.height(400)])
-              .presentationDragIndicator(.hidden)
+        .presentationDragIndicator(.hidden)
         .fullScreenCover(item: $selectedRoute) { route in
-            switch route {
-            case .sport:
-                SportView()
-            case .work:
-                WorkView()
-            case .care:
-                CareView()
-            case .finance:
-                FinanceView()
+            FullScreenCategoryContainer {
+                switch route {
+                case .sport:
+                    SportView()
+                case .work:
+                    WorkView()
+                case .care:
+                    CareView()
+                case .finance:
+                    FinanceView()
+                }
             }
+        }
+    }
+}
+
+// MARK: - Full screen wrapper (adds Back button on top of any page)
+struct FullScreenCategoryContainer<Content: View>: View {
+    @Environment(\.dismiss) private var dismiss
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+
+            // Page content
+            content
+                .ignoresSafeArea()
+                .zIndex(0)
+
+            // Back button ALWAYS on top (works for all views)
+            Button {
+                dismiss()
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(.white.opacity(0.95))
+                        .frame(width: 42, height: 42)
+                        .shadow(color: .black.opacity(0.18), radius: 8, x: 0, y: 4)
+
+                    Image(systemName: "chevron.left")
+                        .foregroundStyle(.black.opacity(0.85))
+                        .font(.system(size: 16, weight: .semibold))
+                }
+            }
+            .padding(.leading, 16)
+            .padding(.top, 8)
+            .safeAreaPadding(.top)
+            .zIndex(9999) // ✅ key line
         }
     }
 }
@@ -184,9 +224,9 @@ struct CategoryItem: Identifiable {
     )
 }
 
-// MARK: - Preview
 #Preview {
     CategoriesSheet()
 }
+
 
 

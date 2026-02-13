@@ -7,85 +7,96 @@
 import SwiftUI
 
 struct CareView: View {
-  
+
+    @Environment(\.dismiss) var dismiss
+
     @State private var showAddGoal = false
     @State private var goals: [Goal] = []
-    @State private var selectedGoal: Goal? = nil // الهدف الحالي للتحرير
-
-    // أول دخول فقط
+    @State private var selectedGoal: Goal? = nil
     @AppStorage("hasOpenedCareBefore") private var hasOpenedCareBefore = false
-
     @EnvironmentObject var viewModel: DashboardViewModel
 
     var body: some View {
-        ZStack(alignment: .top) {
-            Color("background").ignoresSafeArea()
 
-            // الصور العلوية
-            ZStack {
-                Image("Image1").scaledToFit().offset(x: -165, y: -330)
-                Image("Image2").scaledToFit().offset(x: 165, y: -130)
-                Image("blur1").scaledToFit().offset(y: -220)
-                Image("care").resizable().scaledToFit().frame(width: 330).cornerRadius(16).offset(y: -230)
-                Image("Image3").scaledToFit().offset(x: -120, y: 400)
+        NavigationStack {
+            ZStack(alignment: .top) {
+                Color("background").ignoresSafeArea()
+
+                ZStack {
+                    Image("Image1").scaledToFit().offset(x: -165, y: -330)
+                    Image("Image2").scaledToFit().offset(x: 165, y: -130)
+                    Image("blur1").scaledToFit().offset(y: -220)
+                    Image("care").resizable().scaledToFit().frame(width: 330).cornerRadius(16).offset(y: -230)
+                    Image("Image3").scaledToFit().offset(x: -120, y: 400)
+                }
+                .allowsHitTesting(false)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Care").font(.system(size: 26, weight: .bold)).foregroundColor(Color("Color"))
+
+                    Text("Self-care starts with small actions that create meaningful change")
+                        .font(.system(size: 16))
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: 360, alignment: .leading)
+
+                    Text("Every check ✔️ is a step toward choosing yourself")
+                        .font(.system(size: 16))
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: 360, alignment: .leading)
+                }
+                .padding(.leading, 20)
+                .padding(.top, 220)
+
+                VStack {
+                    // ✅ FIX: show empty state whenever goals is empty
+                    if goals.isEmpty {
+                        Spacer().frame(height: 400)
+
+                        Image("girl")
+                            .scaledToFit()
+                            .padding(.top, -25)
+
+                        VStack(spacing: 8) {
+                            Text("Start your goals journey!")
+                                .font(.system(size: 23, weight: .bold))
+
+                            Text("All your goals, organized in one place. We’re here to help you stay on track and grow ✨")
+                                .font(.system(size: 16))
+                                .foregroundColor(.gray)
+                                .frame(maxWidth: 360, alignment: .leading)
+                        }
+                        .padding(.leading, 20)
+
+                        Spacer()
+
+                        Button("Add your goals") {
+                            selectedGoal = nil
+                            showAddGoal = true
+                        }
+                        .frame(width: 167, height: 50)
+                        .background(Color("Color"))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                        .padding(.bottom, 70)
+
+                    } else {
+                        ScrollView {
+                            checklistView
+                                .padding(.top, 400)
+                                .padding(.bottom, 120)
+                        }
+                    }
+                }
             }
-            .allowsHitTesting(false)
-
-            // النصوص العلوية
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Care").font(.system(size: 26, weight: .bold)).foregroundColor(Color("Color"))
-                
-                Text("Self-care starts with small actions that create meaningful change")
-                    .font(.system(size: 16))
-                    .foregroundColor(.gray)
-                    .frame(maxWidth: 360, alignment: .leading)
-                
-                Text("Every check ✔️ is a step toward choosing yourself")
-                    .font(.system(size: 16))
-                    .foregroundColor(.gray)
-                    .frame(maxWidth: 360, alignment: .leading)
-            }
-            .padding(.leading, 20)
-            .padding(.top, 220)
-
-            // المحتوى (البنت أو القائمة)
-            VStack {
-                if goals.isEmpty && !hasOpenedCareBefore {
-                    Spacer().frame(height: 400)
-
-                    Image("girl")
-                        .scaledToFit()
-                        .padding(.top, -25)
-
-                    VStack(spacing: 8) {
-                        Text("Start your goals journey!")
-                            .font(.system(size: 23, weight: .bold))
-                        
-                        Text("All your goals, organized in one place. We’re here to help you stay on track and grow ✨")
-                            .font(.system(size: 16))
-                            .foregroundColor(.gray)
-                            .frame(maxWidth: 360, alignment: .leading)
-                    }
-                    .padding(.leading, 20)
-
-                    Spacer()
-
-                    Button("Add your goals") {
-                        selectedGoal = nil
-                        showAddGoal = true
-                    }
-                    .frame(width: 167, height: 50)
-                    .background(Color("Color"))
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    .padding(.bottom, 70)
-
-                } else {
-                    ScrollView {
-                        checklistView
-                            .padding(.top, 400)
-                            .padding(.bottom, 120)
-                    }
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .semibold))
                 }
             }
         }
@@ -97,16 +108,13 @@ struct CareView: View {
             )
             .presentationDetents([.large])
         }
-        .onAppear {
-            loadGoals()
-        }
+        .onAppear { loadGoals() }
         .onChange(of: goals) { _ in
             saveGoals()
             syncGoalsToDashboard()
         }
     }
 
-    // MARK: - Checklist View
     var checklistView: some View {
         VStack(alignment: .leading, spacing: 24) {
             goalSection(title: "Daily", frequency: .daily)
@@ -116,20 +124,19 @@ struct CareView: View {
         .padding(.horizontal, 20)
     }
 
-    // MARK: - Goal Section
     @ViewBuilder
     func goalSection(title: String, frequency: Frequency) -> some View {
         let filteredGoals = goals.filter { $0.frequency == frequency }
-        
+
         if !filteredGoals.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     Text(title)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.gray)
-                    
+
                     Spacer()
-                    
+
                     Button {
                         selectedGoal = nil
                         showAddGoal = true
@@ -154,10 +161,8 @@ struct CareView: View {
                                         .foregroundColor(.white)
                                         .opacity(goal.isCompleted ? 1 : 0)
                                 )
-                                .onTapGesture {
-                                    toggleGoal(goal)
-                                }
-                            
+                                .onTapGesture { toggleGoal(goal) }
+
                             if index < filteredGoals.count - 1 {
                                 Rectangle()
                                     .fill(Color.gray.opacity(0.3))
@@ -165,7 +170,6 @@ struct CareView: View {
                             }
                         }
 
-                        // اضغط على العنوان لفتح الـ Sheet للتعديل
                         Text(goal.title)
                             .font(.system(size: 17))
                             .foregroundColor(.black.opacity(0.8))
@@ -184,9 +188,7 @@ struct CareView: View {
                     .padding(.bottom, 10)
                     .swipeActions {
                         Button(role: .destructive) {
-                            withAnimation {
-                                deleteGoal(goal)
-                            }
+                            withAnimation { deleteGoal(goal) }
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
@@ -197,26 +199,22 @@ struct CareView: View {
         }
     }
 
-    // MARK: - Toggle
     func toggleGoal(_ goal: Goal) {
         if let index = goals.firstIndex(where: { $0.id == goal.id }) {
             goals[index].isCompleted.toggle()
         }
     }
 
-    // MARK: - Delete
     func deleteGoal(_ goal: Goal) {
         goals.removeAll { $0.id == goal.id }
     }
 
-    // MARK: - Save
     func saveGoals() {
         if let encoded = try? JSONEncoder().encode(goals) {
             UserDefaults.standard.set(encoded, forKey: "savedGoals")
         }
     }
 
-    // MARK: - Load
     func loadGoals() {
         if let data = UserDefaults.standard.data(forKey: "savedGoals"),
            let decoded = try? JSONDecoder().decode([Goal].self, from: data) {
@@ -236,3 +234,4 @@ struct CareView: View {
     CareView()
         .environmentObject(DashboardViewModel())
 }
+

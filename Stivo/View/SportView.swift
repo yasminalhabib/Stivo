@@ -6,74 +6,84 @@
 //
 import SwiftUI
 
-// ========================
-// MARK: - SportView
-// ========================
 struct SportView: View {
-  
+
+    @Environment(\.dismiss) var dismiss   // ✅ added
+
     @State private var showAddGoal = false
     @State private var goals: [Goal] = []
     @State private var selectedGoal: Goal? = nil
     @AppStorage("hasOpenedSportBefore") private var hasOpenedSportBefore = false
     @EnvironmentObject var viewModel: DashboardViewModel
-    
+
     var body: some View {
-        ZStack(alignment: .top) {
-            Color("background").ignoresSafeArea()
-            
-            // الصور العلوية
-            ZStack {
-                Image("Image1").scaledToFit().offset(x: -165, y: -330)
-                Image("Image2").scaledToFit().offset(x: 165, y: -130)
-                Image("blur1").scaledToFit().offset(y: -220)
-                Image("sport").resizable().scaledToFit().frame(width: 330).cornerRadius(16).offset(y: -230)
-                Image("Image3").scaledToFit().offset(x: -120, y: 400)
-            }.allowsHitTesting(false)
-            
-            // النصوص العلوية
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Sports").font(.system(size: 26, weight: .bold)).foregroundColor(Color("Color"))
-                Text("Sports-care starts with small actions that create meaningful change")
-                    .font(.system(size: 16)).foregroundColor(.gray)
-                    .frame(maxWidth: 360, alignment: .leading)
-                Text("Every check ✔️ is a step toward choosing yourself")
-                    .font(.system(size: 16)).foregroundColor(.gray)
-                    .frame(maxWidth: 360, alignment: .leading)
-            }.padding(.leading, 20).padding(.top, 220)
-            
-            VStack {
-                if goals.isEmpty && !hasOpenedSportBefore {
-                    Spacer().frame(height: 400)
-                    Image("girl").scaledToFit().padding(.top, -25)
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Start your goals journey!")
-                            .font(.system(size: 23, weight: .bold))
-                        Text("All your goals, organized in one place. We’re here to help you stay on track and grow ✨")
-                            .font(.system(size: 16)).foregroundColor(.gray)
-                            .frame(maxWidth: 360, alignment: .leading)
-                    }.padding(.leading, 20)
-                    
-                    Spacer()
-                    
-                    Button("Add your goals") {
-                        selectedGoal = nil
-                        showAddGoal = true
-                    }
-                    .frame(width: 167, height: 50)
-                    .background(Color("Color"))
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    .padding(.bottom, 70)
-                } else {
-                    ScrollView {
-                        checklistView.padding(.top, 400).padding(.bottom, 120)
+
+        NavigationStack {                 // ✅ added
+            ZStack(alignment: .top) {
+                Color("background").ignoresSafeArea()
+
+                ZStack {
+                    Image("Image1").scaledToFit().offset(x: -165, y: -330)
+                    Image("Image2").scaledToFit().offset(x: 165, y: -130)
+                    Image("blur1").scaledToFit().offset(y: -220)
+                    Image("sport").resizable().scaledToFit().frame(width: 330).cornerRadius(16).offset(y: -230)
+                    Image("Image3").scaledToFit().offset(x: -120, y: 400)
+                }.allowsHitTesting(false)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Sports").font(.system(size: 26, weight: .bold)).foregroundColor(Color("Color"))
+                    Text("Sports-care starts with small actions that create meaningful change")
+                        .font(.system(size: 16)).foregroundColor(.gray)
+                        .frame(maxWidth: 360, alignment: .leading)
+                    Text("Every check ✔️ is a step toward choosing yourself")
+                        .font(.system(size: 16)).foregroundColor(.gray)
+                        .frame(maxWidth: 360, alignment: .leading)
+                }.padding(.leading, 20).padding(.top, 220)
+
+                VStack {
+                    // ✅ FIX: show empty state whenever goals is empty
+                    if goals.isEmpty {
+                        Spacer().frame(height: 400)
+                        Image("girl").scaledToFit().padding(.top, -25)
+
+                        VStack(spacing: 8) {
+                            Text("Start your goals journey!")
+                                .font(.system(size: 23, weight: .bold))
+                            Text("All your goals, organized in one place. We’re here to help you stay on track and grow ✨")
+                                .font(.system(size: 16)).foregroundColor(.gray)
+                                .frame(maxWidth: 360, alignment: .leading)
+                        }.padding(.leading, 20)
+
+                        Spacer()
+
+                        Button("Add your goals") {
+                            selectedGoal = nil
+                            showAddGoal = true
+                        }
+                        .frame(width: 167, height: 50)
+                        .background(Color("Color"))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                        .padding(.bottom, 70)
+                    } else {
+                        ScrollView {
+                            checklistView.padding(.top, 400).padding(.bottom, 120)
+                        }
                     }
                 }
             }
         }
-        
-      
+        .navigationBarBackButtonHidden(true)     // ✅ added
+        .toolbar {                                // ✅ added
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .semibold))
+                }
+            }
+        }
         .sheet(isPresented: $showAddGoal) {
             AddGoal(
                 goals: $goals,
@@ -110,8 +120,8 @@ struct SportView: View {
                             Text("Add more goals").font(.system(size: 14)).foregroundColor(.gray.opacity(0.8))
                         }
                     }
-                        .padding(.horizontal, 150)
-                        .padding(.bottom, 15)
+                    .padding(.horizontal, 150)
+                    .padding(.bottom, 15)
 
                     ForEach(Array(filteredGoals.enumerated()), id: \.element.id) { index, goal in
                         HStack(alignment: .top, spacing: 15) {
@@ -172,10 +182,12 @@ struct SportView: View {
             if !decoded.isEmpty { hasOpenedSportBefore = true }
         }
     }
+
     func syncGoalsToDashboard() {
         viewModel.sportGoals = goals
     }
 }
 
 #Preview { SportView() }
+
 

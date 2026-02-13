@@ -8,66 +8,81 @@ import SwiftUI
 
 struct WorkView: View {
 
+    @Environment(\.dismiss) var dismiss
+
     @State private var showAddGoal = false
     @State private var goals: [Goal] = []
-    @State private var selectedGoal: Goal? = nil // الهدف للتحرير
+    @State private var selectedGoal: Goal? = nil
     @AppStorage("hasOpenedWorkBefore") private var hasOpenedWorkBefore = false
     @EnvironmentObject var viewModel: DashboardViewModel
 
     var body: some View {
-        ZStack(alignment: .top) {
-            Color("background").ignoresSafeArea()
 
-            // الصور العلوية
-            ZStack {
-                Image("Image1").scaledToFit().offset(x: -165, y: -330)
-                Image("Image2").scaledToFit().offset(x: 165, y: -130)
-                Image("blur1").scaledToFit().offset(y: -220)
-                Image("Work").resizable().scaledToFit().frame(width: 330).cornerRadius(16).offset(y: -230)
-                Image("Image3").scaledToFit().offset(x: -120, y: 400)
-            }
-            .allowsHitTesting(false)
+        NavigationStack {
+            ZStack(alignment: .top) {
+                Color("background").ignoresSafeArea()
 
-            // النصوص العلوية
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Work").font(.system(size: 26, weight: .bold)).foregroundColor(Color("Color"))
-                Text("Work-care starts with small actions that create meaningful change")
-                    .font(.system(size: 16)).foregroundColor(.gray)
-                    .frame(maxWidth: 360, alignment: .leading)
-                Text("Every check ✔️ is a step toward choosing yourself")
-                    .font(.system(size: 16)).foregroundColor(.gray)
-                    .frame(maxWidth: 360, alignment: .leading)
-            }
-            .padding(.leading, 20).padding(.top, 220)
+                ZStack {
+                    Image("Image1").scaledToFit().offset(x: -165, y: -330)
+                    Image("Image2").scaledToFit().offset(x: 165, y: -130)
+                    Image("blur1").scaledToFit().offset(y: -220)
+                    Image("Work").resizable().scaledToFit().frame(width: 330).cornerRadius(16).offset(y: -230)
+                    Image("Image3").scaledToFit().offset(x: -120, y: 400)
+                }
+                .allowsHitTesting(false)
 
-            VStack {
-                if goals.isEmpty && !hasOpenedWorkBefore {
-                    Spacer().frame(height: 400)
-                    Image("girl").scaledToFit().padding(.top, -25)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Work").font(.system(size: 26, weight: .bold)).foregroundColor(Color("Color"))
+                    Text("Work-care starts with small actions that create meaningful change")
+                        .font(.system(size: 16)).foregroundColor(.gray)
+                        .frame(maxWidth: 360, alignment: .leading)
+                    Text("Every check ✔️ is a step toward choosing yourself")
+                        .font(.system(size: 16)).foregroundColor(.gray)
+                        .frame(maxWidth: 360, alignment: .leading)
+                }
+                .padding(.leading, 20).padding(.top, 220)
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Start your goals journey!")
-                            .font(.system(size: 23, weight: .bold))
-                        Text("All your goals, organized in one place. We’re here to help you stay on track and grow ✨")
-                            .font(.system(size: 16)).foregroundColor(.gray)
-                            .frame(maxWidth: 360, alignment: .leading)
-                    }.padding(.leading, 20)
+                VStack {
+                    // ✅ FIX: show empty state whenever goals is empty
+                    if goals.isEmpty {
+                        Spacer().frame(height: 400)
+                        Image("girl").scaledToFit().padding(.top, -25)
 
-                    Spacer()
+                        VStack(spacing: 8) {
+                            Text("Start your goals journey!")
+                                .font(.system(size: 23, weight: .bold))
+                            Text("All your goals, organized in one place. We’re here to help you stay on track and grow ✨")
+                                .font(.system(size: 16)).foregroundColor(.gray)
+                                .frame(maxWidth: 360, alignment: .leading)
+                        }.padding(.leading, 20)
 
-                    Button("Add your goals") {
-                        selectedGoal = nil
-                        showAddGoal = true
+                        Spacer()
+
+                        Button("Add your goals") {
+                            selectedGoal = nil
+                            showAddGoal = true
+                        }
+                        .frame(width: 167, height: 50)
+                        .background(Color("Color"))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                        .padding(.bottom, 70)
+                    } else {
+                        ScrollView {
+                            checklistView.padding(.top, 400).padding(.bottom, 120)
+                        }
                     }
-                    .frame(width: 167, height: 50)
-                    .background(Color("Color"))
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    .padding(.bottom, 70)
-                } else {
-                    ScrollView {
-                        checklistView.padding(.top, 400).padding(.bottom, 120)
-                    }
+                }
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .semibold))
                 }
             }
         }
@@ -153,7 +168,6 @@ struct WorkView: View {
                         }
                     }
                 }
-             
                 .padding(.bottom, 10)
             }
         }
@@ -176,6 +190,7 @@ struct WorkView: View {
             if !decoded.isEmpty { hasOpenedWorkBefore = true }
         }
     }
+
     func syncGoalsToDashboard() {
         viewModel.workGoals = goals
     }
@@ -185,3 +200,4 @@ struct WorkView: View {
     WorkView()
         .environmentObject(DashboardViewModel())
 }
+
