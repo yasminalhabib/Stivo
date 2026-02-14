@@ -8,7 +8,7 @@ import SwiftUI
 
 struct MainDashboardView: View {
     
-    @StateObject private var viewModel = DashboardViewModel()
+    @EnvironmentObject private var viewModel: DashboardViewModel
     @State private var selectedPeriod: String = "Daily Actions"
     @State private var showCategoriesSheet = false
     
@@ -107,20 +107,24 @@ struct MainDashboardView: View {
                             }
                         }
                         
-                        MemorySection(viewModel: viewModel)
+                        // Memory section uses the shared environment object
+                        MemorySection()
                     }
                 }
             }
             
             // 🔥 استدعاء الشيت هنا
             .sheet(isPresented: $showCategoriesSheet) {
-                CategoriesSheet()
+                CategoriesSheetView { category in
+                    print(category.title)
+                }
+                .presentationDetents([.height(400)])
+                .presentationDragIndicator(.hidden)
             }
         }
-        .environmentObject(viewModel)
-
     }
 }
 #Preview {
     MainDashboardView()
+        .environmentObject(DashboardViewModel())
 }

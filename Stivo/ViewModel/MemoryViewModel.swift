@@ -26,3 +26,4 @@ final class MemoryViewModel: ObservableObject {
     @Published var memoryToDelete: Memory?
     @Published var showDeleteAlert = false
 }
+

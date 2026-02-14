@@ -10,8 +10,8 @@ import UIKit
 
 // MARK: - Main Screen
 struct MemoryScreen: View {
-    @ObservedObject var viewModel: DashboardViewModel
-     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var viewModel: DashboardViewModel
+    @Environment(\.dismiss) var dismiss
     @StateObject private var vm = MemoryViewModel()
 
     var body: some View {
@@ -30,14 +30,13 @@ struct MemoryScreen: View {
                         .frame(height: 160)
                         .padding(.bottom, -35)
                 }
-                .navigationBarBackButtonHidden(true) 
+                .navigationBarBackButtonHidden(true)
+
                 VStack(spacing: 0) {
                     // Top bar
-                    
                     HStack {
-                        
                         Button {
-                            dismiss() // لاحقًا لو فيه رجوع
+                            dismiss()
                         } label: {
                             Image("back_arrow")
                                 .resizable()
@@ -74,7 +73,6 @@ struct MemoryScreen: View {
 
                         // كرت إضافة صورة
                         Button {
-                            // Show chooser: Camera or Photo Library
                             vm.showAddSourceDialog = true
                         } label: {
                             ZStack {
@@ -113,15 +111,18 @@ struct MemoryScreen: View {
         .alert("Delete Memory?", isPresented: $vm.showDeleteAlert, presenting: vm.memoryToDelete) { memory in
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
-                if let index = vm.memories.firstIndex(of: memory) {
+                // 1) احذف من قائمة الشاشة
+                if let index = vm.memories.firstIndex(where: { $0.id == memory.id }) {
                     vm.memories.remove(at: index)
                 }
+                // 2) احذف من DashboardViewModel بالاعتماد على id
+                viewModel.deleteMemory(id: memory.id)
             }
         } message: { _ in
             Text("Are you sure you want to delete this memory?")
         }
 
-        // اختيار صورة جديدة (Add flow) with chosen source
+        // اختيار صورة جديدة (Add flow)
         .sheet(isPresented: $vm.showPicker) {
             ImagePicker(image: $vm.selectedImage, sourceType: vm.addPickerSource)
         }
@@ -129,6 +130,7 @@ struct MemoryScreen: View {
         .fullScreenCover(item: $vm.selectedImage) { selected in
             AddMemoryView(image: selected.image) { memory in
                 vm.memories.append(memory)
+                viewModel.addMemory(from: memory)
             }
         }
         // تعديل ذاكرة
@@ -136,6 +138,16 @@ struct MemoryScreen: View {
             EditMemoryView(memory: memory) { updated in
                 if let index = vm.memories.firstIndex(where: { $0.id == updated.id }) {
                     vm.memories[index] = updated
+                    viewModel.updateMemory(from: updated)
+                }
+            }
+        }
+        // تحميل الذكريات المحفوظة عند فتح الشاشة
+        .onAppear {
+            if vm.memories.isEmpty {
+                vm.memories = viewModel.memories.compactMap { stored in
+                    guard let uiImage = UIImage(data: stored.imageData) else { return nil }
+                    return Memory(id: stored.id, image: uiImage, note: stored.note)
                 }
             }
         }
@@ -156,10 +168,7 @@ struct MemoryCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: 28))
                 .clipped()
 
-            // Edit icon
-            Button {
-                onEdit()
-            } label: {
+            Button { onEdit() } label: {
                 Circle()
                     .fill(Color.orange)
                     .frame(width: 30, height: 30)
@@ -207,7 +216,6 @@ struct EditMemoryView: View {
     @State private var note: String
     @State private var image: UIImage
 
-    // Picker state for Edit flow
     @State private var showEditSourceDialog = false
     @State private var editPickerSource: UIImagePickerController.SourceType = .photoLibrary
     @State private var showEditPicker = false
@@ -227,7 +235,6 @@ struct EditMemoryView: View {
             image: image,
             note: note,
             onPickImage: {
-                // Show chooser (Camera / Photo Library)
                 showEditSourceDialog = true
             },
             onCancel: { dismiss() },
@@ -360,7 +367,6 @@ struct ImagePicker: UIViewControllerRepresentable {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
 
-        // Use requested source if available, otherwise fall back to photo library
         if UIImagePickerController.isSourceTypeAvailable(sourceType) {
             picker.sourceType = sourceType
         } else {
@@ -389,7 +395,6 @@ struct ImagePicker: UIViewControllerRepresentable {
             let picked = info[.originalImage] as? UIImage
             picker.dismiss(animated: true) {
                 if let img = picked {
-                    // Set after dismissal to avoid presentation conflicts
                     DispatchQueue.main.async {
                         self.parent.image = SelectedImage(image: img)
                     }
@@ -402,7 +407,3 @@ struct ImagePicker: UIViewControllerRepresentable {
         }
     }
 }
-
-//#Preview {
-//    MemoryScreen()
-//}

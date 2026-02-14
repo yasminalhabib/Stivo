@@ -4,15 +4,24 @@
 //
 //  Created by dina alswailem on 20/08/1447 AH.
 //
-
 import SwiftUI
 import UIKit
 
 // MARK: - Models
 struct Memory: Identifiable, Equatable {
-    let id = UUID()
+    var id: UUID
     var image: UIImage
     var note: String
+
+    init(id: UUID = UUID(), image: UIImage, note: String) {
+        self.id = id
+        self.image = image
+        self.note = note
+    }
+
+    static func == (lhs: Memory, rhs: Memory) -> Bool {
+        lhs.id == rhs.id
+    }
 }
 
 struct SelectedImage: Identifiable {
@@ -27,8 +36,6 @@ enum Frequency: String, CaseIterable, Identifiable, Codable {
     var id: String { rawValue }
 }
 
-
-
 struct Goal: Identifiable, Codable, Equatable {
     var id = UUID()
     var title: String
@@ -38,6 +45,5 @@ struct Goal: Identifiable, Codable, Equatable {
     var frequency: Frequency
     var isCompleted: Bool = false
 }
-
 
 
