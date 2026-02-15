@@ -27,15 +27,17 @@ struct EmptyStateView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30)
             
-            NavigationLink(destination:  CategoriesSheetView { selectedCategory in
-                print(selectedCategory)}) {
+            NavigationLink {
+                CategoriesSheet()
+            } label: {
                 Text("Add your goals")
                     .foregroundColor(.white)
                     .fontWeight(.semibold)
                     .frame(width: 200, height: 50)
-                    .background(Color("Color")) // تقدرين تغيرينه للون ثاني من Assets
+                    .background(Color("Color"))
                     .cornerRadius(18)
             }
+
             
             Spacer()
         }

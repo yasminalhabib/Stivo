@@ -52,6 +52,7 @@ struct VideoBackground: UIViewRepresentable {
 
 struct SplashView: View {
     @State private var showMain = false
+    @StateObject private var dashboardVM = DashboardViewModel()
     
     var body: some View {
         ZStack {
@@ -62,6 +63,7 @@ struct SplashView: View {
             
             if showMain {
                 MainDashboardView()
+                    .environmentObject(dashboardVM)
                     .transition(.opacity)
             }
         }

@@ -1,4 +1,4 @@
-//
+///
 //  DetailsView.swift
 //  Stivo
 //
@@ -8,8 +8,6 @@ import SwiftUI
 
 struct CareView: View {
 
-    @Environment(\.dismiss) var dismiss
-
     @State private var showAddGoal = false
     @State private var goals: [Goal] = []
     @State private var selectedGoal: Goal? = nil
@@ -17,86 +15,73 @@ struct CareView: View {
     @EnvironmentObject var viewModel: DashboardViewModel
 
     var body: some View {
+        ZStack(alignment: .top) {
+            Color("background").ignoresSafeArea()
 
-        NavigationStack {
-            ZStack(alignment: .top) {
-                Color("background").ignoresSafeArea()
-
-                ZStack {
-                    Image("Image1").scaledToFit().offset(x: -165, y: -330)
-                    Image("Image2").scaledToFit().offset(x: 165, y: -130)
-                    Image("blur1").scaledToFit().offset(y: -220)
-                    Image("care").resizable().scaledToFit().frame(width: 330).cornerRadius(16).offset(y: -230)
-                    Image("Image3").scaledToFit().offset(x: -120, y: 400)
-                }
-                .allowsHitTesting(false)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Care").font(.system(size: 26, weight: .bold)).foregroundColor(Color("Color"))
-
-                    Text("Self-care starts with small actions that create meaningful change")
-                        .font(.system(size: 16))
-                        .foregroundColor(.gray)
-                        .frame(maxWidth: 360, alignment: .leading)
-
-                    Text("Every check ✔️ is a step toward choosing yourself")
-                        .font(.system(size: 16))
-                        .foregroundColor(.gray)
-                        .frame(maxWidth: 360, alignment: .leading)
-                }
-                .padding(.leading, 20)
-                .padding(.top, 220)
-
-                VStack {
-                    // ✅ FIX: show empty state whenever goals is empty
-                    if goals.isEmpty {
-                        Spacer().frame(height: 400)
-
-                        Image("girl")
-                            .scaledToFit()
-                            .padding(.top, -25)
-
-                        VStack(spacing: 8) {
-                            Text("Start your goals journey!")
-                                .font(.system(size: 23, weight: .bold))
-
-                            Text("All your goals, organized in one place. We’re here to help you stay on track and grow ✨")
-                                .font(.system(size: 16))
-                                .foregroundColor(.gray)
-                                .frame(maxWidth: 360, alignment: .leading)
-                        }
-                        .padding(.leading, 20)
-
-                        Spacer()
-
-                        Button("Add your goals") {
-                            selectedGoal = nil
-                            showAddGoal = true
-                        }
-                        .frame(width: 167, height: 50)
-                        .background(Color("Color"))
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                        .padding(.bottom, 70)
-
-                    } else {
-                        ScrollView {
-                            checklistView
-                                .padding(.top, 400)
-                                .padding(.bottom, 120)
-                        }
-                    }
-                }
+            ZStack {
+                Image("Image1").scaledToFit().offset(x: -165, y: -330)
+                Image("Image2").scaledToFit().offset(x: 165, y: -130)
+                Image("blur1").scaledToFit().offset(y: -220)
+                Image("care").resizable().scaledToFit().frame(width: 330).cornerRadius(16).offset(y: -230)
+                Image("Image3").scaledToFit().offset(x: -120, y: 400)
             }
-        }
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .semibold))
+            .allowsHitTesting(false)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Care")
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundColor(Color("Color"))
+
+                Text("Self-care starts with small actions that create meaningful change")
+                    .font(.system(size: 16))
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: 360, alignment: .leading)
+
+                Text("Every check ✔️ is a step toward choosing yourself")
+                    .font(.system(size: 16))
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: 360, alignment: .leading)
+            }
+            .padding(.leading, 20)
+            .padding(.top, 220)
+
+            VStack {
+                if goals.isEmpty {
+                    Spacer().frame(height: 400)
+
+                    Image("girl")
+                        .scaledToFit()
+                        .padding(.top, -25)
+
+                    VStack(spacing: 8) {
+                        Text("Start your goals journey!")
+                            .font(.system(size: 23, weight: .bold))
+
+                        Text("All your goals, organized in one place. We’re here to help you stay on track and grow ✨")
+                            .font(.system(size: 16))
+                            .foregroundColor(.gray)
+                            .frame(maxWidth: 360, alignment: .leading)
+                    }
+                    .padding(.leading, 20)
+
+                    Spacer()
+
+                    Button("Add your goals") {
+                        selectedGoal = nil
+                        showAddGoal = true
+                    }
+                    .frame(width: 167, height: 50)
+                    .background(Color("Color"))
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                    .padding(.bottom, 70)
+
+                } else {
+                    ScrollView {
+                        checklistView
+                            .padding(.top, 400)
+                            .padding(.bottom, 120)
+                    }
                 }
             }
         }
@@ -219,9 +204,7 @@ struct CareView: View {
         if let data = UserDefaults.standard.data(forKey: "savedGoals"),
            let decoded = try? JSONDecoder().decode([Goal].self, from: data) {
             goals = decoded
-            if !decoded.isEmpty {
-                hasOpenedCareBefore = true
-            }
+            if !decoded.isEmpty { hasOpenedCareBefore = true }
         }
     }
 
@@ -234,4 +217,7 @@ struct CareView: View {
     CareView()
         .environmentObject(DashboardViewModel())
 }
+
+
+
 

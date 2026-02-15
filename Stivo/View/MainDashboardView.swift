@@ -114,14 +114,9 @@ struct MainDashboardView: View {
             }
             
             // 🔥 استدعاء الشيت هنا
-            .sheet(isPresented: $showCategoriesSheet) {
-                CategoriesSheetView { category in
-                    print(category.title)
-                }
-                .presentationDetents([.height(400)])
-                .presentationDragIndicator(.hidden)
-            }
-        }
+            .fullScreenCover(isPresented: $showCategoriesSheet) {
+                CategoriesSheet()
+            }        }
     }
 }
 #Preview {
