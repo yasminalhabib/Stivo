@@ -7,29 +7,31 @@
 import SwiftUI
 
 struct EmptyStateView: View {
-    
+    // ✅ FIXED: Use a binding/action instead of NavigationLink so the button
+    // can trigger a sheet presentation from the parent, not push a nav destination.
+    var onAddGoalsTapped: () -> Void
+
     var body: some View {
         VStack(spacing: 20) {
-            
+
             Spacer()
-            
+
             Image("girl")
                 .resizable()
                 .scaledToFit()
                 .frame(height: 220)
-            
+
             Text("Start your goals journey!")
                 .font(.system(size: 20, weight: .bold))
-            
-            Text("All your goals organized in one place. We’re here to help you stay on track and grow ✨")
+
+            Text("All your goals organized in one place. We're here to help you stay on track and grow ✨")
                 .font(.system(size: 14))
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30)
-            
-            NavigationLink {
-                CategoriesSheet()
-            } label: {
+
+            // ✅ Use a plain Button that calls the parent's action
+            Button(action: onAddGoalsTapped) {
                 Text("Add your goals")
                     .foregroundColor(.white)
                     .fontWeight(.semibold)
@@ -38,8 +40,11 @@ struct EmptyStateView: View {
                     .cornerRadius(18)
             }
 
-            
             Spacer()
         }
     }
+}
+
+#Preview {
+    EmptyStateView(onAddGoalsTapped: {})
 }

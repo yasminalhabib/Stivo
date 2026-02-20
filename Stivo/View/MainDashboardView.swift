@@ -7,23 +7,20 @@
 import SwiftUI
 
 struct MainDashboardView: View {
-    
+
     @EnvironmentObject private var viewModel: DashboardViewModel
     @State private var selectedPeriod: String = "Daily Actions"
     @State private var showCategoriesSheet = false
-    
+
     var body: some View {
         NavigationStack {
-            
             ZStack {
-                
                 Color("background")
                     .ignoresSafeArea()
-                
-                // الخلفية يسار
+
+                // Background left
                 VStack {
                     Spacer()
-                    
                     HStack {
                         Image("pp")
                             .resizable()
@@ -31,19 +28,16 @@ struct MainDashboardView: View {
                             .frame(width: 140)
                             .opacity(0.6)
                             .padding(.bottom, 170)
-                        
                         Spacer()
                     }
                     .padding(.bottom, 40)
                 }
-                
-                // الخلفية يمين
+
+                // Background right
                 VStack {
                     Spacer()
-                    
                     HStack {
                         Spacer()
-                        
                         Image("Image1")
                             .resizable()
                             .scaledToFit()
@@ -52,20 +46,19 @@ struct MainDashboardView: View {
                     }
                     .padding(.bottom, 400)
                 }
-                
+
                 ScrollView {
-                    
                     VStack(alignment: .center, spacing: 20) {
-                        
+
                         DashboardCard(
                             progress: Double(viewModel.completionPercentage(for: selectedPeriod)) / 100,
                             title: selectedPeriod
                         )
-                        
+
                         PeriodSelector(selectedPeriod: $selectedPeriod)
                             .frame(width: 100)
                             .frame(maxWidth: 289, alignment: .leading)
-                        
+
                         let actions = {
                             switch selectedPeriod {
                             case "Weekly Actions":
@@ -76,25 +69,24 @@ struct MainDashboardView: View {
                                 return viewModel.dailyActions
                             }
                         }()
-                        
+
                         if actions.isEmpty {
-                            
                             Image("girl")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(height: 100)
-                            
+
                             Text("Start your goals journey!")
                                 .font(.system(size: 16, weight: .bold))
                                 .padding(.top, 10)
-                            
-                            Text("All your goals, organized in one place. We’re here to help you stay on track and grow ✨")
+
+                            Text("All your goals, organized in one place. We're here to help you stay on track and grow ✨")
                                 .font(.custom("Helvetica", size: 12))
                                 .foregroundColor(Color(red: 138/255, green: 136/255, blue: 136/255))
                                 .frame(width: 306)
                                 .multilineTextAlignment(.center)
                                 .lineLimit(5)
-                            
+
                             Button {
                                 showCategoriesSheet = true
                             } label: {
@@ -106,19 +98,20 @@ struct MainDashboardView: View {
                                     .shadow(color: .black.opacity(0.15), radius: 5, y: 4)
                             }
                         }
-                        
-                        // Memory section uses the shared environment object
+
                         MemorySection()
                     }
                 }
             }
-            
-            // 🔥 استدعاء الشيت هنا
-            .fullScreenCover(isPresented: $showCategoriesSheet) {
+            // ✅ FIXED: Use .sheet instead of .fullScreenCover so it appears as half-sheet
+            .sheet(isPresented: $showCategoriesSheet) {
                 CategoriesSheet()
-            }        }
+                    .environmentObject(viewModel)
+            }
+        }
     }
 }
+
 #Preview {
     MainDashboardView()
         .environmentObject(DashboardViewModel())

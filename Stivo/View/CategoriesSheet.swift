@@ -6,20 +6,15 @@
 //
 import SwiftUI
 
-// MARK: - CategoriesSheet (Presented as a SHEET from MainDashboardView)
-import SwiftUI
-
+// MARK: - CategoriesSheet
 struct CategoriesSheet: View {
+    @EnvironmentObject var viewModel: DashboardViewModel
+
     var body: some View {
-        NavigationStack {
-            CategoriesSheetView()
-                .presentationDetents([.height(400)])
-                .presentationDragIndicator(.hidden)
-                .background(
-                    Color.black.opacity(0.15)
-                        .ignoresSafeArea()
-                )
-        }
+        CategoriesSheetView()
+            .environmentObject(viewModel)
+            .presentationDetents([.height(430)])
+            .presentationDragIndicator(.visible)
     }
 }
 
@@ -28,92 +23,97 @@ enum CategoryRoute: Hashable {
     case sport, work, care, finance
 }
 
-// MARK: - Sheet View
+// ✅ Identifiable conformance needed for fullScreenCover(item:)
+extension CategoryRoute: Identifiable {
+    var id: Self { self }
+}
+
+// MARK: - Sheet Body View
 struct CategoriesSheetView: View {
+    @EnvironmentObject var viewModel: DashboardViewModel
+
+    // ✅ selectedRoute drives fullScreenCover — nil means closed
+    @State private var selectedRoute: CategoryRoute? = nil
 
     private let cardW: CGFloat = 153
     private let sportH: CGFloat = 206
     private let financeH: CGFloat = 139
     private let workH: CGFloat = 136
     private let careH: CGFloat = 198
-
     private let sidePadding: CGFloat = 24
-    private let spacing: CGFloat = 20
+    private let spacing: CGFloat = 16
 
     var body: some View {
         VStack(spacing: 14) {
 
-            Image(systemName: "chevron.down")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(.gray.opacity(0.8))
-                .padding(.top, 10)
-
             HStack(alignment: .bottom, spacing: spacing) {
 
+                // Left column: Sport (tall) + Work (short)
                 VStack(spacing: spacing) {
+                    CategoryCardView(item: .sport, size: CGSize(width: cardW, height: sportH))
+                        .onTapGesture { selectedRoute = .sport }
 
-                    NavigationLink(value: CategoryRoute.sport) {
-                        CategoryCardView(
-                            item: .sport,
-                            size: CGSize(width: cardW, height: sportH)
-                        )
-                    }
-
-                    NavigationLink(value: CategoryRoute.work) {
-                        CategoryCardView(
-                            item: .work,
-                            size: CGSize(width: cardW, height: workH)
-                        )
-                    }
+                    CategoryCardView(item: .work, size: CGSize(width: cardW, height: workH))
+                        .onTapGesture { selectedRoute = .work }
                 }
                 .frame(width: cardW)
 
+                // Right column: Finance (short) + Care (tall)
                 VStack(spacing: spacing) {
+                    CategoryCardView(item: .finance, size: CGSize(width: cardW, height: financeH))
+                        .onTapGesture { selectedRoute = .finance }
 
-                    NavigationLink(value: CategoryRoute.finance) {
-                        CategoryCardView(
-                            item: .finance,
-                            size: CGSize(width: cardW, height: financeH)
-                        )
-                    }
-
-                    NavigationLink(value: CategoryRoute.care) {
-                        CategoryCardView(
-                            item: .care,
-                            size: CGSize(width: cardW, height: careH)
-                        )
-                    }
+                    CategoryCardView(item: .care, size: CGSize(width: cardW, height: careH))
+                        .onTapGesture { selectedRoute = .care }
                 }
                 .frame(width: cardW)
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, sidePadding)
-            .padding(.top, 6)
+            .padding(.top, 10)
 
             Spacer(minLength: 8)
         }
         .padding(.top, 6)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(
-            Color(.systemGray6)
-                .ignoresSafeArea(edges: .bottom)
-        )
-        .navigationDestination(for: CategoryRoute.self) { route in
-            switch route {
-            case .sport: SportView()
-            case .work: WorkView()
-            case .care: CareView()
-            case .finance: FinanceView()
+        .background(Color(.systemGray6).ignoresSafeArea(edges: .bottom))
+        // ✅ fullScreenCover truly covers the whole screen — fixes the partial-open bug
+        .fullScreenCover(item: $selectedRoute) { route in
+            NavigationStack {
+                destinationView(for: route)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button {
+                                selectedRoute = nil
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "chevron.left")
+                                    Text("Back")
+                                }
+                                .foregroundColor(Color("Color"))
+                            }
+                        }
+                    }
             }
+            .environmentObject(viewModel)
+        }
+    }
+
+    @ViewBuilder
+    func destinationView(for route: CategoryRoute) -> some View {
+        switch route {
+        case .sport:   SportView()
+        case .work:    WorkView()
+        case .care:    CareView()
+        case .finance: FinanceView()
         }
     }
 }
 
-// MARK: - Category Card (pure view, no Button)
+// MARK: - Category Card
 struct CategoryCardView: View {
     let item: CategoryItem
     let size: CGSize
-    
 
     var body: some View {
         ZStack {
@@ -153,29 +153,10 @@ struct CategoryItem: Identifiable {
     let icon: String
     let bg: Color
 
-    static let sport = CategoryItem(
-        title: "Sport",
-        icon: "figure.run",
-        bg: Color(red: 0.76, green: 0.79, blue: 0.72)
-    )
-
-    static let finance = CategoryItem(
-        title: "Finance",
-        icon: "creditcard.fill",
-        bg: Color(red: 0.98, green: 0.74, blue: 0.62)
-    )
-
-    static let work = CategoryItem(
-        title: "Work",
-        icon: "case.fill",
-        bg: Color(red: 0.98, green: 0.74, blue: 0.62)
-    )
-
-    static let care = CategoryItem(
-        title: "Care",
-        icon: "camera.macro",
-        bg: Color(red: 0.76, green: 0.79, blue: 0.72)
-    )
+    static let sport   = CategoryItem(title: "Sport",   icon: "figure.run",    bg: Color(red: 0.76, green: 0.79, blue: 0.72))
+    static let finance = CategoryItem(title: "Finance", icon: "creditcard.fill", bg: Color(red: 0.98, green: 0.74, blue: 0.62))
+    static let work    = CategoryItem(title: "Work",    icon: "case.fill",     bg: Color(red: 0.98, green: 0.74, blue: 0.62))
+    static let care    = CategoryItem(title: "Care",    icon: "camera.macro",  bg: Color(red: 0.76, green: 0.79, blue: 0.72))
 }
 
 #Preview {
