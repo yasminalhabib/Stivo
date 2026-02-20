@@ -1,9 +1,3 @@
-//
-//  PeriodSelector.swift
-//  Stivo
-//
-//  Created by aisha alh on 23/08/1447 AH.
-//
 import SwiftUI
 
 struct PeriodSelector: View {
@@ -43,7 +37,10 @@ struct PeriodSelector: View {
         .frame(width: 190)
         
     }
+    
 }
 #Preview {
     MainDashboardView()
+        .environmentObject(DashboardViewModel())
+
 }

@@ -32,7 +32,7 @@ final class DashboardViewModel: ObservableObject {
     @Published var workGoals: [Goal] = []
     @Published var financeGoals: [Goal] = []
     @Published var careGoals: [Goal] = []
-
+    
     func addGoal(_ goal: Goal, type: String) {
         switch type {
         case "Sport":
@@ -49,7 +49,7 @@ final class DashboardViewModel: ObservableObject {
         let action = ActionItem(title: goal.title,
                                 isCompleted: goal.isCompleted,
                                 goalID: goal.id)
-
+        
         switch goal.frequency {
         case .daily:
             dailyActions.append(action)
@@ -59,45 +59,45 @@ final class DashboardViewModel: ObservableObject {
             monthlyActions.append(action)
         }
     }
-
+    
     var sportCompletionPercentage: Int {
         guard !sportGoals.isEmpty else { return 0 }
         let done = sportGoals.filter { $0.isCompleted }.count
         return Int((Double(done) / Double(sportGoals.count)) * 100)
     }
-
+    
     var workCompletionPercentage: Int {
         guard !workGoals.isEmpty else { return 0 }
         let done = workGoals.filter { $0.isCompleted }.count
         return Int((Double(done) / Double(workGoals.count)) * 100)
     }
-
+    
     var financeCompletionPercentage: Int {
         guard !financeGoals.isEmpty else { return 0 }
         let done = financeGoals.filter { $0.isCompleted }.count
         return Int((Double(done) / Double(financeGoals.count)) * 100)
     }
-
+    
     var careCompletionPercentage: Int {
         guard !careGoals.isEmpty else { return 0 }
         let done = careGoals.filter { $0.isCompleted }.count
         return Int((Double(done) / Double(careGoals.count)) * 100)
     }
-
+    
     var isNewUser: Bool {
         dailyActions.isEmpty &&
         weeklyActions.isEmpty &&
         monthlyActions.isEmpty
     }
-
+    
     var hasAnyActions: Bool {
         !dailyActions.isEmpty || !weeklyActions.isEmpty || !monthlyActions.isEmpty
     }
-
+    
     @Published var dailyActions: [ActionItem] = []
     @Published var weeklyActions: [ActionItem] = []
     @Published var monthlyActions: [ActionItem] = []
-
+    
     // Default progress (used by the dashboard card). Currently based on Daily Actions.
     var completionPercentage: Int {
         let actions = dailyActions
@@ -105,7 +105,7 @@ final class DashboardViewModel: ObservableObject {
         let done = actions.filter { $0.isCompleted }.count
         return Int((Double(done) / Double(actions.count)) * 100)
     }
-
+    
     func toggle(_ action: ActionItem, category: String) {
         switch category {
         case "Weekly Actions":
@@ -122,7 +122,7 @@ final class DashboardViewModel: ObservableObject {
             }
         }
     }
-
+    
     func addAction(title: String, category: String) {
         let item = ActionItem(title: title, isCompleted: false)
         switch category {
@@ -134,7 +134,7 @@ final class DashboardViewModel: ObservableObject {
             dailyActions.append(item)
         }
     }
-
+    
     func completionPercentage(for category: String) -> Int {
         let actions: [ActionItem]
         switch category {
@@ -145,25 +145,27 @@ final class DashboardViewModel: ObservableObject {
         default:
             actions = dailyActions
         }
-
+        
         guard !actions.isEmpty else { return 0 }
         let done = actions.filter { $0.isCompleted }.count
         return Int((Double(done) / Double(actions.count)) * 100)
     }
-
+    
     // MARK: - Memories
     @Published var memories: [StoredMemory] = [] {
         didSet {
             saveMemories()
         }
     }
-
+    
     init() {
         loadMemories()
+loadAllGoals()
+
     }
-
+    
     private let memoriesKey = "savedMemories_v2"
-
+    
     private func saveMemories() {
         do {
             let data = try JSONEncoder().encode(memories)
@@ -172,7 +174,7 @@ final class DashboardViewModel: ObservableObject {
             print("Failed to save memories: \(error)")
         }
     }
-
+    
     private func loadMemories() {
         guard let data = UserDefaults.standard.data(forKey: memoriesKey) else {
             // Migrate from older storage if existed (array of Data)
@@ -191,21 +193,21 @@ final class DashboardViewModel: ObservableObject {
             self.memories = []
         }
     }
-
+    
     // Convenience for legacy callers: stores image with empty note
     func addMemory(image: UIImage) {
         guard let data = image.jpegData(compressionQuality: 0.8) else { return }
         let stored = StoredMemory(imageData: data, note: "")
         memories.append(stored)
     }
-
+    
     // New APIs used by MemoryScreen
     func addMemory(from memory: Memory) {
         guard let data = memory.image.jpegData(compressionQuality: 0.8) else { return }
         let stored = StoredMemory(id: memory.id, imageData: data, note: memory.note)
         memories.append(stored)
     }
-
+    
     func updateMemory(from memory: Memory) {
         guard let data = memory.image.jpegData(compressionQuality: 0.8) else { return }
         if let index = memories.firstIndex(where: { $0.id == memory.id }) {
@@ -213,8 +215,24 @@ final class DashboardViewModel: ObservableObject {
             memories[index].note = memory.note
         }
     }
-
+    
     func deleteMemory(id: UUID) {
         memories.removeAll { $0.id == id }
+    }
+    
+    
+    func loadAllGoals() {
+        sportGoals = loadGoals(forKey: "savedSportGoals")
+        workGoals = loadGoals(forKey: "savedWorkGoals")
+        financeGoals = loadGoals(forKey: "savedFinanceGoals")
+        careGoals = loadGoals(forKey: "savedGoals")
+    }
+    
+    private func loadGoals(forKey key: String) -> [Goal] {
+        if let data = UserDefaults.standard.data(forKey: key),
+           let decoded = try? JSONDecoder().decode([Goal].self, from: data) {
+            return decoded
+        }
+        return []
     }
 }

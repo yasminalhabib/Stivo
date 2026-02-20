@@ -7,29 +7,94 @@
 import SwiftUI
 
 // MARK: - CategoriesSheet (Presented as a SHEET from MainDashboardView)
-import SwiftUI
-
 struct CategoriesSheet: View {
+    @State private var selectedRoute: CategoryRoute?
+
     var body: some View {
-        NavigationStack {
-            CategoriesSheetView()
-                .presentationDetents([.height(400)])
-                .presentationDragIndicator(.hidden)
-                .background(
-                    Color.black.opacity(0.15)
-                        .ignoresSafeArea()
-                )
+        CategoriesSheetView { category in
+            selectedRoute = CategoryRoute(from: category)
+        }
+        .background(
+            Color.black.opacity(0.15).ignoresSafeArea()
+        )
+        .presentationDetents([.height(400)])
+        .presentationDragIndicator(.hidden)
+        .fullScreenCover(item: $selectedRoute) { route in
+            FullScreenCategoryContainer {
+                switch route {
+                case .sport:
+                    SportView()
+                case .work:
+                    WorkView()
+                case .care:
+                    CareView()
+                case .finance:
+                    FinanceView()
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Full screen wrapper (adds Back button on top of any page)
+struct FullScreenCategoryContainer<Content: View>: View {
+    @Environment(\.dismiss) private var dismiss
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+
+            // Page content
+            content
+                .ignoresSafeArea()
+                .zIndex(0)
+
+            // Back button ALWAYS on top (works for all views)
+            Button {
+                dismiss()
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(.white.opacity(0.95))
+                        .frame(width: 42, height: 42)
+                        .shadow(color: .black.opacity(0.18), radius: 8, x: 0, y: 4)
+
+                    Image(systemName: "chevron.left")
+                        .foregroundStyle(.black.opacity(0.85))
+                        .font(.system(size: 16, weight: .semibold))
+                }
+            }
+            .padding(.leading, 16)
+            .padding(.top, 8)
+            .safeAreaPadding(.top)
+            .zIndex(9999) // ✅ key line
         }
     }
 }
 
 // MARK: - Navigation Route
-enum CategoryRoute: Hashable {
+enum CategoryRoute: Identifiable {
     case sport, work, care, finance
+    var id: String { String(describing: self) }
+
+    init?(from item: CategoryItem) {
+        switch item.title {
+        case "Sport": self = .sport
+        case "Work": self = .work
+        case "Care": self = .care
+        case "Finance": self = .finance
+        default: return nil
+        }
+    }
 }
 
 // MARK: - Sheet View
 struct CategoriesSheetView: View {
+    let onSelect: (CategoryItem) -> Void
 
     private let cardW: CGFloat = 153
     private let sportH: CGFloat = 206
@@ -51,46 +116,30 @@ struct CategoriesSheetView: View {
             HStack(alignment: .bottom, spacing: spacing) {
 
                 VStack(spacing: spacing) {
+                    CategoryCard(item: .sport,
+                                 size: CGSize(width: cardW, height: sportH),
+                                 onSelect: onSelect)
 
-                    NavigationLink(value: CategoryRoute.sport) {
-                        CategoryCardView(
-                            item: .sport,
-                            size: CGSize(width: cardW, height: sportH)
-                        )
-                    }
-
-                    NavigationLink(value: CategoryRoute.work) {
-                        CategoryCardView(
-                            item: .work,
-                            size: CGSize(width: cardW, height: workH)
-                        )
-                    }
+                    CategoryCard(item: .work,
+                                 size: CGSize(width: cardW, height: workH),
+                                 onSelect: onSelect)
                 }
                 .frame(width: cardW)
 
                 VStack(spacing: spacing) {
+                    CategoryCard(item: .finance,
+                                 size: CGSize(width: cardW, height: financeH),
+                                 onSelect: onSelect)
 
-                    NavigationLink(value: CategoryRoute.finance) {
-                        CategoryCardView(
-                            item: .finance,
-                            size: CGSize(width: cardW, height: financeH)
-                        )
-                    }
-
-                    NavigationLink(value: CategoryRoute.care) {
-                        CategoryCardView(
-                            item: .care,
-                            size: CGSize(width: cardW, height: careH)
-                        )
-                    }
+                    CategoryCard(item: .care,
+                                 size: CGSize(width: cardW, height: careH),
+                                 onSelect: onSelect)
                 }
                 .frame(width: cardW)
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, sidePadding)
             .padding(.top, 6)
-
-            Spacer(minLength: 8)
         }
         .padding(.top, 6)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -98,51 +147,47 @@ struct CategoriesSheetView: View {
             Color(.systemGray6)
                 .ignoresSafeArea(edges: .bottom)
         )
-        .navigationDestination(for: CategoryRoute.self) { route in
-            switch route {
-            case .sport: SportView()
-            case .work: WorkView()
-            case .care: CareView()
-            case .finance: FinanceView()
-            }
-        }
     }
 }
 
-// MARK: - Category Card (pure view, no Button)
-struct CategoryCardView: View {
+// MARK: - Category Card
+struct CategoryCard: View {
     let item: CategoryItem
     let size: CGSize
-    
+    let onSelect: (CategoryItem) -> Void
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(item.bg)
+        Button {
+            onSelect(item)
+        } label: {
+            ZStack {
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(item.bg)
 
-            Text(item.title)
-                .font(.system(size: 22, weight: .medium))
-                .foregroundStyle(.white)
+                Text(item.title)
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundStyle(.white)
 
-            VStack {
-                HStack {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color.white.opacity(0.95))
-                            .frame(width: 44, height: 36)
+                VStack {
+                    HStack {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(Color.white.opacity(0.95))
+                                .frame(width: 44, height: 36)
 
-                        Image(systemName: item.icon)
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(Color.black.opacity(0.75))
+                            Image(systemName: item.icon)
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(Color.black.opacity(0.75))
+                        }
+                        Spacer()
                     }
                     Spacer()
                 }
-                Spacer()
+                .padding(14)
             }
-            .padding(14)
+            .frame(width: size.width, height: size.height)
         }
-        .frame(width: size.width, height: size.height)
-        .contentShape(Rectangle())
+        .buttonStyle(.plain)
     }
 }
 
@@ -182,14 +227,3 @@ struct CategoryItem: Identifiable {
     CategoriesSheet()
         .environmentObject(DashboardViewModel())
 }
-
-
-
-
-
-
-
-
-
-
-
