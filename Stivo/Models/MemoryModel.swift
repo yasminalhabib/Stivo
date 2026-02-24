@@ -40,8 +40,6 @@ struct Goal: Identifiable, Codable, Equatable {
     var id = UUID()
     var title: String
     var description: String
-    var startDate: Date
-    var endDate: Date
     var frequency: Frequency
     var isCompleted: Bool = false
 }

@@ -14,8 +14,6 @@ struct AddGoal: View {
 
     @State private var goalTitle = ""
     @State private var description = ""
-    @State private var startDate = Date()
-    @State private var endDate = Date()
     @State private var frequency: Frequency = .daily
 
     var body: some View {
@@ -30,6 +28,7 @@ struct AddGoal: View {
             Text("Goal title")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(.black)
+
             TextField("Enter goal title", text: $goalTitle)
                 .padding(.vertical, 12)
                 .padding(.horizontal, 14)
@@ -38,6 +37,7 @@ struct AddGoal: View {
             Text("Frequency")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(.black)
+
             Menu {
                 ForEach(Frequency.allCases) { item in
                     Button { frequency = item } label: { Text(item.rawValue) }
@@ -57,22 +57,12 @@ struct AddGoal: View {
             Text("Description (optional)")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(.black)
+
             TextEditor(text: $description)
                 .frame(height: 140)
                 .padding(12)
                 .background(RoundedRectangle(cornerRadius: 18).fill(Color.white))
                 .scrollContentBackground(.hidden)
-
-            HStack(spacing: 12) {
-                VStack(alignment: .leading) {
-                    Text("Start Date")
-                    DatePicker("", selection: $startDate, displayedComponents: .date).labelsHidden()
-                }
-                VStack(alignment: .leading) {
-                    Text("End Date")
-                    DatePicker("", selection: $endDate, displayedComponents: .date).labelsHidden()
-                }
-            }
 
             HStack(spacing: 12) {
                 Button {
@@ -81,16 +71,12 @@ struct AddGoal: View {
                         // تحديث الهدف الحالي
                         goals[index].title = goalTitle
                         goals[index].description = description
-                        goals[index].startDate = startDate
-                        goals[index].endDate = endDate
                         goals[index].frequency = frequency
                     } else {
                         // إضافة هدف جديد
                         let newGoal = Goal(
                             title: goalTitle,
                             description: description,
-                            startDate: startDate,
-                            endDate: endDate,
                             frequency: frequency
                         )
                         goals.append(newGoal)
@@ -106,7 +92,6 @@ struct AddGoal: View {
                 }
                 .disabled(goalTitle.isEmpty)
 
-                // زر حذف يظهر فقط إذا الهدف موجود للتعديل
                 if editingGoal != nil {
                     Button(role: .destructive) {
                         if let editing = editingGoal,
@@ -130,12 +115,9 @@ struct AddGoal: View {
         .padding(20)
         .background(Color(.systemGray6).ignoresSafeArea())
         .onAppear {
-            // إذا الهدف موجود → حط القيم الحالية
             if let editing = editingGoal {
                 goalTitle = editing.title
                 description = editing.description
-                startDate = editing.startDate
-                endDate = editing.endDate
                 frequency = editing.frequency
             }
         }
