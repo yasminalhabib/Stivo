@@ -23,9 +23,6 @@ struct WorkView: View {
                     .frame(width: geo.size.width)
                     .allowsHitTesting(false)
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-
                         Color.clear
                             .frame(height: geo.size.width * 0.55)
 
@@ -44,13 +41,22 @@ struct WorkView: View {
                         }
                         .padding(.leading, 40)
                         .padding(.trailing, 20)
-                        .padding(.bottom, 28)
+                        .padding(.top, geo.size.width * 0.55 + 20)
+                        .zIndex(1)
+                
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 10) {
 
-                        if goals.isEmpty {
-                            emptyStateView
-                        } else {
-                            checklistView
-                                .padding(.bottom, 120)
+                                // مساحة شفافة تعادل (ارتفاع الصور + ارتفاع النص الثابت)
+                                // عشان البطاقات تبدأ من تحت الكلام ولا تغطيه في البداية
+                                Color.clear
+                                    .frame(height: geo.size.width * 0.55 + 160)
+
+                                if goals.isEmpty {
+                                    emptyStateView
+                                } else {
+                                    checklistView
+                                        .padding(.bottom, 120)
                         }
                     }
                 }

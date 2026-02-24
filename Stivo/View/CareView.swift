@@ -23,28 +23,34 @@ struct CareView: View {
                     .frame(width: geo.size.width)
                     .allowsHitTesting(false)
 
+                Color.clear
+                    .frame(height: geo.size.width * 0.55)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Care")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(Color("Color"))
+                    Text("Skin-care starts with small actions that create meaningful change")
+                        .font(.system(size: 16))
+                        .foregroundColor(.gray)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("Every check ✔️ is a step toward choosing yourself")
+                        .font(.system(size: 16))
+                        .foregroundColor(.gray)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.leading, 40)
+                .padding(.trailing, 20)
+                .padding(.top, geo.size.width * 0.55 + 20)
+                .zIndex(1)
+        
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 10) {
 
+                        // مساحة شفافة تعادل (ارتفاع الصور + ارتفاع النص الثابت)
+                        // عشان البطاقات تبدأ من تحت الكلام ولا تغطيه في البداية
                         Color.clear
-                            .frame(height: geo.size.width * 0.55)
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Care")
-                                .font(.system(size: 26, weight: .bold))
-                                .foregroundColor(Color("Color"))
-                            Text("Self-care starts with small actions that create meaningful change")
-                                .font(.system(size: 16))
-                                .foregroundColor(.gray)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Text("Every check ✔️ is a step toward choosing yourself")
-                                .font(.system(size: 16))
-                                .foregroundColor(.gray)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(.leading, 40)
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 28)
+                            .frame(height: geo.size.width * 0.55 + 160)
 
                         if goals.isEmpty {
                             emptyStateView

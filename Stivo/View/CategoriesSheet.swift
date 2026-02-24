@@ -70,11 +70,11 @@ struct CategoriesSheetView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, sidePadding)
-            .padding(.top, 10)
+            .padding(.top, 40)
 
-            Spacer(minLength: 8)
+                        Spacer(minLength: 8)
         }
-        .padding(.top, 6)
+        .padding(.top, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(.systemGray6).ignoresSafeArea(edges: .bottom))
         // ✅ fullScreenCover truly covers the whole screen — fixes the partial-open bug

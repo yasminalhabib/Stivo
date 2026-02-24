@@ -19,36 +19,39 @@ struct SportView: View {
             ZStack(alignment: .top) {
                 Color("background").ignoresSafeArea()
 
-                // ✅ Decorative images overlaid on top at fixed positions — never affect layout
+                // ✅ الصور الزخرفية بالخلفية - ثابتة
                 decorativeImages
                     .frame(width: geo.size.width)
                     .allowsHitTesting(false)
 
-                // ✅ All scrollable content in one ScrollView from top
+                // ✅ العنوان والوصف - ثابتين في مكانهم
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Sports")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(Color("Color"))
+                    Text("Sports-care starts with small actions that create meaningful change")
+                        .font(.system(size: 16))
+                        .foregroundColor(.gray)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("Every check ✔️ is a step toward choosing yourself")
+                        .font(.system(size: 16))
+                        .foregroundColor(.gray)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.leading, 30)
+                .padding(.trailing, 10)
+                // الإزاحة من الأعلى ليكون تحت الصور تماماً
+                .padding(.top, geo.size.width * 0.55 + 20)
+                .zIndex(1) // لضمان بقاء النص فوق الخلفية
+
+                // ✅ المحتوى القابل للسحب (البطاقات فقط)
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 10) {
 
-                        // Invisible spacer that matches the height of the decorative image area
+                        // مساحة شفافة تعادل (ارتفاع الصور + ارتفاع النص الثابت)
+                        // عشان البطاقات تبدأ من تحت الكلام ولا تغطيه في البداية
                         Color.clear
-                            .frame(height: geo.size.width * 0.55)
-
-                        // Header
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Sports")
-                                .font(.system(size: 26, weight: .bold))
-                                .foregroundColor(Color("Color"))
-                            Text("Sports-care starts with small actions that create meaningful change")
-                                .font(.system(size: 16))
-                                .foregroundColor(.gray)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Text("Every check ✔️ is a step toward choosing yourself")
-                                .font(.system(size: 16))
-                                .foregroundColor(.gray)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(.leading, 40)
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 28)
+                            .frame(height: geo.size.width * 0.55 + 160)
 
                         if goals.isEmpty {
                             emptyStateView
@@ -68,7 +71,7 @@ struct SportView: View {
         .onChange(of: goals) { _ in saveGoals(); syncGoalsToDashboard() }
     }
 
-    // MARK: - Decorative images (positioned absolutely, never affect layout)
+    // MARK: - Decorative images
     var decorativeImages: some View {
         ZStack {
             Image("Image1").scaledToFit().offset(x: -165, y: -330)
@@ -80,7 +83,11 @@ struct SportView: View {
                 .frame(width: 330)
                 .cornerRadius(16)
                 .offset(y: -230)
-            Image("Image3").scaledToFit().offset(x: -120, y: 400)
+            Image("Image3").scaledToFit().offset(x: -120, y: -150)
+          
+        
+                
+           
         }
     }
 
@@ -166,11 +173,6 @@ struct SportView: View {
                             .onTapGesture { selectedGoal = goal; showAddGoal = true }
                     }
                     .padding(.bottom, 10)
-                    .swipeActions {
-                        Button(role: .destructive) { withAnimation { deleteGoal(goal) } } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    }
                 }
             }
             .padding(.bottom, 10)
@@ -194,10 +196,3 @@ struct SportView: View {
 }
 
 #Preview { SportView().environmentObject(DashboardViewModel()) }
-
-
-
-
-
-
-

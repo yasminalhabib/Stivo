@@ -59,8 +59,8 @@ struct MainDashboardView: View {
                         // PeriodSelector على اليمين وأوسع شوي
                         HStack {
                             PeriodSelector(selectedPeriod: $selectedPeriod)
-                                                       .frame(width: 100)
-                                                       .frame(maxWidth: 289, alignment: .leading)
+                                .frame(width: 100)
+                                .frame(maxWidth: 289, alignment: .leading)
                         }
                         .padding(.horizontal)
                         
@@ -148,7 +148,7 @@ extension MainDashboardView {
         
         return HStack(alignment: .top, spacing: 15) {
             
-            // Timeline مع التشيك وخط عمودي
+            // Timeline مع التشيك وخط عمودي مضبوط
             VStack(spacing: 0) {
                 
                 Button {
@@ -165,12 +165,15 @@ extension MainDashboardView {
                         )
                 }
                 
+                // الخط بين الدوائر يلصق تمامًا
                 if index < currentGoals.count - 1 {
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
-                        .frame(width: 2, height: 45)
+                        .frame(width: 2)
+                        .frame(maxHeight: .infinity)
                 }
             }
+            .frame(width: 35)
             
             // Card
             VStack(alignment: .leading, spacing: 4) {
@@ -321,10 +324,6 @@ struct SwipeModifier: ViewModifier {
     }
 }
 
-#Preview {
-    MainDashboardView()
-        .environmentObject(DashboardViewModel())
-}
 #Preview {
     MainDashboardView()
         .environmentObject(DashboardViewModel())
