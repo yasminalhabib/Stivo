@@ -66,25 +66,24 @@ struct MainDashboardView: View {
                         .animation(.easeInOut(duration: 0.6), value: progressValue)
                         
                         PeriodSelector(selectedPeriod: $selectedPeriod)
-                        
                             .frame(width: 100)
                             .frame(maxWidth: 289, alignment: .leading)
                         
                         if !allGoals.isEmpty {
-                                VStack(alignment: .leading, spacing: 24) {
+                            VStack(alignment: .leading, spacing: 24) {
 
-                                    Text("Your Goals")
-                                        .font(.system(size: 18, weight: .bold))
-                                        .padding(.horizontal)
+                                Text("Your Goals")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .padding(.horizontal)
 
-                                    LazyVStack(spacing: 16) {
-                                        ForEach(goalsForProgress.filter { !$0.isCompleted }) { goal in
-                                            goalRow(goal: goal)
-                                        }
+                                LazyVStack(spacing: 16) {
+                                    ForEach(goalsForProgress.filter { !$0.isCompleted }) { goal in
+                                        goalRow(goal: goal)
                                     }
-                                    .animation(.easeInOut(duration: 0.35), value: allGoals)
                                 }
-                                .padding(.vertical)
+                                .animation(.easeInOut(duration: 0.35), value: allGoals)
+                            }
+                            .padding(.vertical)
                         }
                         
                         if allGoals.isEmpty {
@@ -117,13 +116,13 @@ struct MainDashboardView: View {
                             }
                         }
                         
-                        // Memory section uses the shared environment object
-                        MemorySection()
+                        // شلّينا MemorySection من هنا عشان ما تتحرك مع السكrol
                     }
+                    .padding(.bottom, 0) // ما نحتاج padding لأن safeAreaInset يضبط المساحة
                 }
             }
             
-            // 🔥 استدعاء الشيت هنا
+            // Toast Overlay
             .overlay(
                 VStack {
                     if showToast {
@@ -141,6 +140,15 @@ struct MainDashboardView: View {
                 }
             )
             .animation(.easeInOut(duration: 0.3), value: showToast)
+            
+            // تثبيت الميموري تحت
+            .safeAreaInset(edge: .bottom) {
+                MemorySection()
+                    .background(
+                        Color("background")
+                            .ignoresSafeArea()
+                    )
+            }
             .sheet(isPresented: $showCategoriesSheet) {
                 CategoriesSheet()
             }
@@ -300,4 +308,3 @@ struct SwipeModifier: ViewModifier {
     MainDashboardView()
         .environmentObject(DashboardViewModel())
 }
-
