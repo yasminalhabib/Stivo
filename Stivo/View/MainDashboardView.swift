@@ -18,72 +18,80 @@ struct MainDashboardView: View {
             
             ZStack {
                 
-                Color("background")
-                    .ignoresSafeArea()
+                Color("background").ignoresSafeArea()
                 
-                // الخلفية يسار
+                // 🖼 الخلفية ثابتة
                 VStack {
                     Spacer()
-                    
                     HStack {
                         Image("pp")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 140)
                             .opacity(0.6)
-                            .padding(.bottom, 170)
-                        
+                            .padding(.bottom, 180)
                         Spacer()
                     }
                     .padding(.bottom, 40)
                 }
                 
-                // الخلفية يمين
                 VStack {
                     Spacer()
-                    
                     HStack {
                         Spacer()
-                        
                         Image("Image1")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 140)
                             .opacity(0.6)
                     }
-                    .padding(.bottom, 400)
+                    .padding(.bottom, 300)
                 }
                 
                 ScrollView {
-                    VStack(alignment: .center, spacing: 20) {
+                    VStack(spacing: 20) {
                         
-                        let progressValue = calculatedProgress
-
                         DashboardCard(
-                            progress: progressValue,
+                            progress: calculatedProgress,
                             title: selectedPeriod
                         )
-                        .animation(.easeInOut(duration: 0.6), value: progressValue)
                         
-                        PeriodSelector(selectedPeriod: $selectedPeriod)
-                            .frame(width: 100)
-                            .frame(maxWidth: 289, alignment: .leading)
+                        // PeriodSelector على اليمين وأوسع شوي
+                        HStack {
+                            PeriodSelector(selectedPeriod: $selectedPeriod)
+                                                       .frame(width: 100)
+                                                       .frame(maxWidth: 289, alignment: .leading)
+                        }
+                        .padding(.horizontal)
                         
                         if !allGoals.isEmpty {
-                            VStack(alignment: .leading, spacing: 24) {
-
+                            VStack(alignment: .leading, spacing: 16) {
+                                
                                 Text("Your Goals")
                                     .font(.system(size: 18, weight: .bold))
                                     .padding(.horizontal)
-
-                                LazyVStack(spacing: 16) {
-                                    ForEach(goalsForProgress.filter { !$0.isCompleted }) { goal in
+                                
+                                LazyVStack(spacing: 18) {
+                                    ForEach(goalsForProgress) { goal in
                                         goalRow(goal: goal)
                                     }
                                 }
-                                .animation(.easeInOut(duration: 0.35), value: allGoals)
+                                
+                                // ✅ زر Add more goals على اليمين باللون الرمادي
+                                HStack {
+                                    Spacer()
+                                    Button(action: { showCategoriesSheet = true }) {
+                                        Text("Add more goals")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(.gray)
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 10)
+                                            .background(Color.gray.opacity(0.10))
+                                            .cornerRadius(12)
+                                    }
+                                }
+                                .padding(.horizontal)
                             }
-                            .padding(.vertical)
                         }
                         
                         if allGoals.isEmpty {
@@ -95,14 +103,6 @@ struct MainDashboardView: View {
                             
                             Text("Start your goals journey!")
                                 .font(.system(size: 16, weight: .bold))
-                                .padding(.top, 10)
-                            
-                            Text("All your goals, organized in one place. We’re here to help you stay on track and grow ✨")
-                                .font(.custom("Helvetica", size: 12))
-                                .foregroundColor(Color(red: 138/255, green: 136/255, blue: 136/255))
-                                .frame(width: 306)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(5)
                             
                             Button {
                                 showCategoriesSheet = true
@@ -112,153 +112,146 @@ struct MainDashboardView: View {
                                     .background(Color("Color"))
                                     .foregroundColor(.white)
                                     .cornerRadius(22)
-                                    .shadow(color: .black.opacity(0.15), radius: 5, y: 4)
                             }
                         }
-                        
-                        // شلّينا MemorySection من هنا عشان ما تتحرك مع السكrol
                     }
-                    .padding(.bottom, 0) // ما نحتاج padding لأن safeAreaInset يضبط المساحة
+                    .padding(.top, 10)
                 }
             }
             
-            // Toast Overlay
-            .overlay(
-                VStack {
-                    if showToast {
-                        Text("Completed 🎉")
-                            .font(.system(size: 14, weight: .semibold))
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
-                            .background(Color.black.opacity(0.8))
-                            .foregroundColor(.white)
-                            .cornerRadius(20)
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                            .padding(.top, 60)
-                    }
-                    Spacer()
-                }
-            )
-            .animation(.easeInOut(duration: 0.3), value: showToast)
+            // Toast عند الإنجاز
+            .overlay(toastView)
             
-            // تثبيت الميموري تحت
+            // MemorySection أسفل الشاشة
             .safeAreaInset(edge: .bottom) {
                 MemorySection()
-                    .background(
-                        Color("background")
-                            .ignoresSafeArea()
-                    )
+                    .background(Color("background").ignoresSafeArea())
             }
+            
             .sheet(isPresented: $showCategoriesSheet) {
                 CategoriesSheet()
             }
         }
     }
+}
+
+//////////////////////////////////////////////////////////////
+// MARK: - Goal Row (Timeline Style)
+//////////////////////////////////////////////////////////////
+
+extension MainDashboardView {
+    
+    private func goalRow(goal: Goal) -> some View {
+        
+        let currentGoals = goalsForProgress
+        let index = currentGoals.firstIndex(where: { $0.id == goal.id }) ?? 0
+        
+        return HStack(alignment: .top, spacing: 15) {
+            
+            // Timeline مع التشيك وخط عمودي
+            VStack(spacing: 0) {
+                
+                Button {
+                    withAnimation(.easeInOut) { toggleGoal(goal) }
+                } label: {
+                    Circle()
+                        .fill(goal.isCompleted ? Color.green : Color.gray.opacity(0.2))
+                        .frame(width: 35, height: 35)
+                        .overlay(
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.white)
+                                .opacity(goal.isCompleted ? 1 : 0)
+                        )
+                }
+                
+                if index < currentGoals.count - 1 {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 2, height: 45)
+                }
+            }
+            
+            // Card
+            VStack(alignment: .leading, spacing: 4) {
+                
+                Text(goal.title)
+                    .font(.system(size: 15, weight: .medium))
+                    .strikethrough(goal.isCompleted, color: .gray)
+                    .foregroundColor(goal.isCompleted ? .gray : .primary)
+                
+                Text(categoryName(for: goal))
+                    .font(.system(size: 12))
+                    .foregroundColor(.gray)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white)
+            .cornerRadius(14)
+            .shadow(color: Color.black.opacity(0.05), radius: 5)
+            
+            Spacer()
+        }
+        .padding(.horizontal)
+        .modifier(SwipeModifier(goal: goal, deleteAction: deleteGoal))
+    }
+}
+
+//////////////////////////////////////////////////////////////
+// MARK: - Logic
+//////////////////////////////////////////////////////////////
+
+extension MainDashboardView {
     
     private func toggleGoal(_ goal: Goal) {
+        
         if let index = viewModel.sportGoals.firstIndex(where: { $0.id == goal.id }) {
             viewModel.sportGoals[index].isCompleted.toggle()
-            if viewModel.sportGoals[index].isCompleted {
-                triggerToast()
-            }
+            if viewModel.sportGoals[index].isCompleted { triggerToast() }
         }
         if let index = viewModel.workGoals.firstIndex(where: { $0.id == goal.id }) {
             viewModel.workGoals[index].isCompleted.toggle()
-            if viewModel.workGoals[index].isCompleted {
-                triggerToast()
-            }
+            if viewModel.workGoals[index].isCompleted { triggerToast() }
         }
         if let index = viewModel.financeGoals.firstIndex(where: { $0.id == goal.id }) {
             viewModel.financeGoals[index].isCompleted.toggle()
-            if viewModel.financeGoals[index].isCompleted {
-                triggerToast()
-            }
+            if viewModel.financeGoals[index].isCompleted { triggerToast() }
         }
         if let index = viewModel.careGoals.firstIndex(where: { $0.id == goal.id }) {
             viewModel.careGoals[index].isCompleted.toggle()
-            if viewModel.careGoals[index].isCompleted {
-                triggerToast()
-            }
+            if viewModel.careGoals[index].isCompleted { triggerToast() }
         }
     }
-    private func triggerToast() {
-        showToast = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            withAnimation {
-                showToast = false
-            }
-        }
-    }
-
+    
     private func deleteGoal(_ goal: Goal) {
         viewModel.sportGoals.removeAll { $0.id == goal.id }
         viewModel.workGoals.removeAll { $0.id == goal.id }
         viewModel.financeGoals.removeAll { $0.id == goal.id }
         viewModel.careGoals.removeAll { $0.id == goal.id }
     }
-
-    private func categoryName(for goal: Goal) -> String {
-        if viewModel.sportGoals.contains(where: { $0.id == goal.id }) {
-            return "Sport"
+    
+    private func triggerToast() {
+        showToast = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation { showToast = false }
         }
-        if viewModel.workGoals.contains(where: { $0.id == goal.id }) {
-            return "Work"
-        }
-        if viewModel.financeGoals.contains(where: { $0.id == goal.id }) {
-            return "Finance"
-        }
-        if viewModel.careGoals.contains(where: { $0.id == goal.id }) {
-            return "Care"
-        }
-        return ""
     }
     
-    @ViewBuilder
-    private func goalRow(goal: Goal) -> some View {
-        HStack(spacing: 12) {
-            Button {
-                withAnimation(.easeInOut) {
-                    toggleGoal(goal)
-                }
-            } label: {
-                Circle()
-                    .stroke(Color.gray, lineWidth: 2)
-                    .frame(width: 26, height: 26)
-                    .overlay(
-                        goal.isCompleted ?
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 12, weight: .bold))
-                        : nil
-                    )
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(goal.title)
-                    .font(.system(size: 15, weight: .medium))
-                    .strikethrough(goal.isCompleted, color: .gray)
-                    .foregroundColor(goal.isCompleted ? .gray : .primary)
-
-                Text(categoryName(for: goal))
-                    .font(.system(size: 12))
-                    .foregroundColor(.gray)
-            }
-
-            Spacer()
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.95))
-                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.black.opacity(0.03), lineWidth: 1)
-        )
-        .padding(.horizontal)
-        .transition(.move(edge: .bottom).combined(with: .opacity))
-        .modifier(SwipeModifier(goal: goal, deleteAction: deleteGoal))
+    private func categoryName(for goal: Goal) -> String {
+        if viewModel.sportGoals.contains(where: { $0.id == goal.id }) { return "Sport" }
+        if viewModel.workGoals.contains(where: { $0.id == goal.id }) { return "Work" }
+        if viewModel.financeGoals.contains(where: { $0.id == goal.id }) { return "Finance" }
+        if viewModel.careGoals.contains(where: { $0.id == goal.id }) { return "Care" }
+        return ""
     }
+}
+
+//////////////////////////////////////////////////////////////
+// MARK: - Data
+//////////////////////////////////////////////////////////////
+
+extension MainDashboardView {
     
     private var allGoals: [Goal] {
         viewModel.sportGoals
@@ -266,44 +259,72 @@ struct MainDashboardView: View {
         + viewModel.financeGoals
         + viewModel.careGoals
     }
-
+    
     private var goalsForProgress: [Goal] {
         switch selectedPeriod {
-        case "Weekly Actions":
-            return allGoals.filter { $0.frequency == .weekly }
-        case "Monthly Actions":
-            return allGoals.filter { $0.frequency == .monthly }
-        default:
-            return allGoals.filter { $0.frequency == .daily }
+        case "Weekly Actions": return allGoals.filter { $0.frequency == .weekly }
+        case "Monthly Actions": return allGoals.filter { $0.frequency == .monthly }
+        default: return allGoals.filter { $0.frequency == .daily }
         }
     }
-
+    
     private var calculatedProgress: Double {
         let completed = goalsForProgress.filter { $0.isCompleted }.count
-        return goalsForProgress.isEmpty ? 0 : Double(completed) / Double(goalsForProgress.count)
+        return goalsForProgress.isEmpty ? 0 :
+        Double(completed) / Double(goalsForProgress.count)
     }
 }
+
+//////////////////////////////////////////////////////////////
+// MARK: - Toast
+//////////////////////////////////////////////////////////////
+
+extension MainDashboardView {
+    
+    private var toastView: some View {
+        VStack {
+            if showToast {
+                Text("Completed 🎉")
+                    .font(.system(size: 14, weight: .semibold))
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color.black.opacity(0.8))
+                    .foregroundColor(.white)
+                    .cornerRadius(20)
+                    .padding(.top, 60)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+            Spacer()
+        }
+        .animation(.easeInOut, value: showToast)
+    }
+}
+
+//////////////////////////////////////////////////////////////
+// MARK: - Swipe Delete (السحب لليسار)
+//////////////////////////////////////////////////////////////
 
 struct SwipeModifier: ViewModifier {
+    
     let goal: Goal
     let deleteAction: (Goal) -> Void
-
+    
     func body(content: Content) -> some View {
-        if #available(iOS 15.0, *) {
-            content
-                .swipeActions {
-                    Button(role: .destructive) {
-                        deleteAction(goal)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
+        content
+            .swipeActions(edge: .trailing) {   // السحب لليسار
+                Button(role: .destructive) {
+                    deleteAction(goal)
+                } label: {
+                    Label("Delete", systemImage: "trash")
                 }
-        } else {
-            content
-        }
+            }
     }
 }
 
+#Preview {
+    MainDashboardView()
+        .environmentObject(DashboardViewModel())
+}
 #Preview {
     MainDashboardView()
         .environmentObject(DashboardViewModel())
