@@ -54,7 +54,7 @@ struct AddGoal: View {
                 .background(RoundedRectangle(cornerRadius: 18).fill(Color.white))
             }
 
-            Text("Description (optional)")
+            Text("Description")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(.black)
 
@@ -63,6 +63,7 @@ struct AddGoal: View {
                 .padding(12)
                 .background(RoundedRectangle(cornerRadius: 18).fill(Color.white))
                 .scrollContentBackground(.hidden)
+            
 
             HStack(spacing: 12) {
                 Button {
