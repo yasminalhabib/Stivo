@@ -9,6 +9,7 @@ import SwiftUI
 struct MemorySection: View {
     @EnvironmentObject var viewModel: DashboardViewModel
     @State private var showMemoryScreen = false
+    @State private var editingMemory: Memory? = nil
     
     // ألوان قريبة من التصميم بالصورة
     private let accent = Color(red: 255/255, green: 182/255, blue: 149/255) // برتقالي فاتح للزر
@@ -74,6 +75,10 @@ struct MemorySection: View {
                                         .frame(width: 220, height: 140)
                                         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                                         .shadow(color: .black.opacity(0.10), radius: 8, y: 4)
+                                        .onTapGesture {
+                                            // افتحي شاشة التعديل مباشرة عند الضغط على الصورة
+                                            editingMemory = Memory(id: stored.id, image: image, note: stored.note)
+                                        }
                                 }
                             }
                             
@@ -112,6 +117,15 @@ struct MemorySection: View {
         .frame(maxWidth: .infinity)
         .frame(height: 230)
         .padding(.horizontal, 16)
+        // شاشة التعديل تظهر كـ fullScreenCover
+        .fullScreenCover(item: $editingMemory) { memory in
+            EditMemoryView(memory: memory) { updated in
+                // حفظ التعديلات في الـ ViewModel
+                viewModel.updateMemory(from: updated)
+                // ما نحتاج نحدث شيء محلياً لأن القائمة تُبنى من viewModel.memories مباشرة
+            }
+            .environmentObject(viewModel)
+        }
     }
 }
 
@@ -121,3 +135,4 @@ struct MemorySection: View {
         .padding()
         .background(Color.gray.opacity(0.1))
 }
+
