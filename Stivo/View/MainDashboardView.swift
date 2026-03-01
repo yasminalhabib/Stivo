@@ -9,10 +9,30 @@ import SwiftUI
 struct MainDashboardView: View {
     
     @EnvironmentObject private var viewModel: DashboardViewModel
-    @State private var selectedPeriod: String = "Daily  Actions"
+    @State private var selectedPeriod: String = "Daily Actions"
     @State private var showCategoriesSheet = false
     @State private var showToast = false
-    
+    @State private var showAddGoal = false
+    @State private var selectedGoal: Goal? = nil
+
+    private var currentGoalsBinding: Binding<[Goal]> {
+        Binding(
+            get: {
+                guard let goal = selectedGoal else { return viewModel.sportGoals }
+                if viewModel.workGoals.contains(where: { $0.id == goal.id }) { return viewModel.workGoals }
+                if viewModel.financeGoals.contains(where: { $0.id == goal.id }) { return viewModel.financeGoals }
+                if viewModel.careGoals.contains(where: { $0.id == goal.id }) { return viewModel.careGoals }
+                return viewModel.sportGoals
+            },
+            set: { newValue in
+                guard let goal = selectedGoal else { viewModel.sportGoals = newValue; return }
+                if viewModel.workGoals.contains(where: { $0.id == goal.id }) { viewModel.workGoals = newValue; return }
+                if viewModel.financeGoals.contains(where: { $0.id == goal.id }) { viewModel.financeGoals = newValue; return }
+                if viewModel.careGoals.contains(where: { $0.id == goal.id }) { viewModel.careGoals = newValue; return }
+                viewModel.sportGoals = newValue
+            }
+        )
+    }
     var body: some View {
         NavigationStack {
             
@@ -130,6 +150,12 @@ struct MainDashboardView: View {
             
             .sheet(isPresented: $showCategoriesSheet) {
                 CategoriesSheet()
+                    .environmentObject(viewModel)
+            }
+            .sheet(isPresented: $showAddGoal, onDismiss: { selectedGoal = nil }) {
+                AddGoal(goals: currentGoalsBinding, showSheet: $showAddGoal, editingGoal: $selectedGoal)
+                    .environmentObject(viewModel)
+                    
             }
         }
     }
@@ -176,28 +202,42 @@ extension MainDashboardView {
             .frame(width: 35)
             
             // Card
-            VStack(alignment: .leading, spacing: 4) {
-                
-                Text(goal.title)
-                    .font(.system(size: 15, weight: .medium))
-                    .strikethrough(goal.isCompleted, color: .gray)
-                    .foregroundColor(goal.isCompleted ? .gray : .primary)
-                
-                Text(categoryName(for: goal))
-                    .font(.system(size: 12))
-                    .foregroundColor(.gray)
+            Button {
+                selectedGoal = goal
+                showAddGoal = true
+            } label: {
+                VStack(alignment: .leading, spacing: 4) {
+                    
+                    Text(goal.title)
+                        .font(.system(size: 15, weight: .medium))
+                        .strikethrough(goal.isCompleted, color: .gray)
+                        .foregroundColor(goal.isCompleted ? .gray : .primary)
+                    
+                    Text(categoryName(for: goal))
+                        .font(.system(size: 12))
+                        .foregroundColor(.gray)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white)
+                .cornerRadius(14)
+                .shadow(color: Color.black.opacity(0.05), radius: 5)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white)
-            .cornerRadius(14)
-            .shadow(color: Color.black.opacity(0.05), radius: 5)
+            .buttonStyle(.plain)
             
             Spacer()
         }
         .padding(.horizontal)
-        .modifier(SwipeModifier(goal: goal, deleteAction: deleteGoal))
+        .contentShape(Rectangle())
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                deleteGoal(goal)
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+       
     }
 }
 
@@ -307,22 +347,7 @@ extension MainDashboardView {
 // MARK: - Swipe Delete (السحب لليسار)
 //////////////////////////////////////////////////////////////
 
-struct SwipeModifier: ViewModifier {
-    
-    let goal: Goal
-    let deleteAction: (Goal) -> Void
-    
-    func body(content: Content) -> some View {
-        content
-            .swipeActions(edge: .trailing) {   // السحب لليسار
-                Button(role: .destructive) {
-                    deleteAction(goal)
-                } label: {
-                    Label("Delete", systemImage: "trash")
-                }
-            }
-    }
-}
+
 
 #Preview {
     MainDashboardView()
