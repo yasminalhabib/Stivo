@@ -13,6 +13,7 @@ struct SportView: View {
     @State private var selectedGoal: Goal? = nil
     @AppStorage("hasOpenedSportBefore") private var hasOpenedSportBefore = false
     @EnvironmentObject var viewModel: DashboardViewModel
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         GeometryReader { geo in
@@ -40,16 +41,12 @@ struct SportView: View {
                 }
                 .padding(.leading, 30)
                 .padding(.trailing, 10)
-                // الإزاحة من الأعلى ليكون تحت الصور تماماً
                 .padding(.top, geo.size.width * 0.55 + 20)
-                .zIndex(1) // لضمان بقاء النص فوق الخلفية
+                .zIndex(1)
 
                 // ✅ المحتوى القابل للسحب (البطاقات فقط)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) {
-
-                        // مساحة شفافة تعادل (ارتفاع الصور + ارتفاع النص الثابت)
-                        // عشان البطاقات تبدأ من تحت الكلام ولا تغطيه في البداية
                         Color.clear
                             .frame(height: geo.size.width * 0.55 + 160)
 
@@ -69,6 +66,19 @@ struct SportView: View {
         }
         .onAppear { loadGoals() }
         .onChange(of: goals) { _ in saveGoals(); syncGoalsToDashboard() }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { dismiss() } label: {
+                    Image("back_arrow")
+                        .renderingMode(.original)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+            }
+        }
     }
 
     // MARK: - Decorative images
@@ -84,10 +94,6 @@ struct SportView: View {
                 .cornerRadius(16)
                 .offset(y: -230)
             Image("Image3").scaledToFit().offset(x: -120, y: -150)
-          
-        
-                
-           
         }
     }
 

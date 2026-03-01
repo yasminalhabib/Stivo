@@ -13,6 +13,7 @@ struct CareView: View {
     @State private var selectedGoal: Goal? = nil
     @AppStorage("hasOpenedCareBefore") private var hasOpenedCareBefore = false
     @EnvironmentObject var viewModel: DashboardViewModel
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         GeometryReader { geo in
@@ -47,8 +48,6 @@ struct CareView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) {
 
-                        // مساحة شفافة تعادل (ارتفاع الصور + ارتفاع النص الثابت)
-                        // عشان البطاقات تبدأ من تحت الكلام ولا تغطيه في البداية
                         Color.clear
                             .frame(height: geo.size.width * 0.55 + 160)
 
@@ -68,6 +67,19 @@ struct CareView: View {
         }
         .onAppear { loadGoals() }
         .onChange(of: goals) { _ in saveGoals(); syncGoalsToDashboard() }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { dismiss() } label: {
+                    Image("back_arrow")
+                        .renderingMode(.original)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+            }
+        }
     }
 
     var decorativeImages: some View {
@@ -187,7 +199,3 @@ struct CareView: View {
 }
 
 #Preview { CareView().environmentObject(DashboardViewModel()) }
-
-
-
-

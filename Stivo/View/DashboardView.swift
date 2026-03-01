@@ -9,6 +9,8 @@ import SwiftUI
 
 struct DashboardView: View {
     @EnvironmentObject var viewModel: DashboardViewModel
+    @Environment(\.dismiss) private var dismiss
+    
     // جلب البيانات من UserDefaults
     @State private var sportGoals: [Goal] = []
     @State private var workGoals: [Goal] = []
@@ -36,11 +38,23 @@ struct DashboardView: View {
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
-                        
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 90)
                     .padding(.bottom, 50)
+                }
+            }
+            .navigationBarBackButtonHidden(true) // إخفاء زر الرجوع الافتراضي
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { dismiss() } label: {
+                        Image("back_arrow")
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 28, height: 28)
+                            .contentShape(Rectangle())
+                    }
                 }
             }
         }
@@ -160,4 +174,5 @@ struct ProgressRing: View {
 
 #Preview {
     DashboardView()
+        .environmentObject(DashboardViewModel()) // مهم لتجنّب الكراش في الـ Preview
 }

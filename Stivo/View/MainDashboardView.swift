@@ -9,7 +9,7 @@ import SwiftUI
 struct MainDashboardView: View {
     
     @EnvironmentObject private var viewModel: DashboardViewModel
-    @State private var selectedPeriod: String = "Daily Actions"
+    @State private var selectedPeriod: String = "Daily  Actions"
     @State private var showCategoriesSheet = false
     @State private var showToast = false
     

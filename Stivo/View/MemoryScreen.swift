@@ -30,24 +30,8 @@ struct MemoryScreen: View {
                         .frame(height: 160)
                         .padding(.bottom, -35)
                 }
-                .navigationBarBackButtonHidden(true)
 
                 VStack(spacing: 0) {
-                    // Top bar
-                    HStack {
-                        Button {
-                            dismiss()
-                        } label: {
-                            Image("back_arrow")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 28, height: 28)
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 10)
-
                     // Use List to support swipe actions cleanly
                     List {
                         ForEach(vm.memories) { memory in
@@ -104,6 +88,19 @@ struct MemoryScreen: View {
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
+                }
+            }
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { dismiss() } label: {
+                        Image("back_arrow")
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 28, height: 28)
+                            .contentShape(Rectangle())
+                    }
                 }
             }
         }

@@ -72,7 +72,7 @@ struct CategoriesSheetView: View {
             .padding(.horizontal, sidePadding)
             .padding(.top, 40)
 
-                        Spacer(minLength: 8)
+            Spacer(minLength: 8)
         }
         .padding(.top, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -81,19 +81,6 @@ struct CategoriesSheetView: View {
         .fullScreenCover(item: $selectedRoute) { route in
             NavigationStack {
                 destinationView(for: route)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button {
-                                selectedRoute = nil
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "chevron.left")
-                                    Text("Back")
-                                }
-                                .foregroundColor(Color("Color"))
-                            }
-                        }
-                    }
             }
             .environmentObject(viewModel)
         }
@@ -163,14 +150,3 @@ struct CategoryItem: Identifiable {
     CategoriesSheet()
         .environmentObject(DashboardViewModel())
 }
-
-
-
-
-
-
-
-
-
-
-

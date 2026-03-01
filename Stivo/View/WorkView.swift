@@ -13,6 +13,7 @@ struct WorkView: View {
     @State private var selectedGoal: Goal? = nil
     @AppStorage("hasOpenedWorkBefore") private var hasOpenedWorkBefore = false
     @EnvironmentObject var viewModel: DashboardViewModel
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         GeometryReader { geo in
@@ -23,40 +24,38 @@ struct WorkView: View {
                     .frame(width: geo.size.width)
                     .allowsHitTesting(false)
 
+                Color.clear
+                    .frame(height: geo.size.width * 0.55)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Work")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(Color("Color"))
+                    Text("Work-care starts with small actions that create meaningful change")
+                        .font(.system(size: 16))
+                        .foregroundColor(.gray)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("Every check ✔️ is a step toward choosing yourself")
+                        .font(.system(size: 16))
+                        .foregroundColor(.gray)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.leading, 40)
+                .padding(.trailing, 20)
+                .padding(.top, geo.size.width * 0.55 + 20)
+                .zIndex(1)
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 10) {
+
                         Color.clear
-                            .frame(height: geo.size.width * 0.55)
+                            .frame(height: geo.size.width * 0.55 + 160)
 
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Work")
-                                .font(.system(size: 26, weight: .bold))
-                                .foregroundColor(Color("Color"))
-                            Text("Work-care starts with small actions that create meaningful change")
-                                .font(.system(size: 16))
-                                .foregroundColor(.gray)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Text("Every check ✔️ is a step toward choosing yourself")
-                                .font(.system(size: 16))
-                                .foregroundColor(.gray)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(.leading, 40)
-                        .padding(.trailing, 20)
-                        .padding(.top, geo.size.width * 0.55 + 20)
-                        .zIndex(1)
-                
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 10) {
-
-                                // مساحة شفافة تعادل (ارتفاع الصور + ارتفاع النص الثابت)
-                                // عشان البطاقات تبدأ من تحت الكلام ولا تغطيه في البداية
-                                Color.clear
-                                    .frame(height: geo.size.width * 0.55 + 160)
-
-                                if goals.isEmpty {
-                                    emptyStateView
-                                } else {
-                                    checklistView
-                                        .padding(.bottom, 120)
+                        if goals.isEmpty {
+                            emptyStateView
+                        } else {
+                            checklistView
+                                .padding(.bottom, 120)
                         }
                     }
                 }
@@ -68,6 +67,19 @@ struct WorkView: View {
         }
         .onAppear { loadGoals() }
         .onChange(of: goals) { _ in saveGoals(); syncGoalsToDashboard() }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { dismiss() } label: {
+                    Image("back_arrow")
+                        .renderingMode(.original)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .contentShape(Rectangle())
+                }
+            }
+        }
     }
 
     var decorativeImages: some View {
@@ -187,7 +199,3 @@ struct WorkView: View {
 }
 
 #Preview { WorkView().environmentObject(DashboardViewModel()) }
-
-
-
-
