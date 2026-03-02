@@ -89,6 +89,7 @@ struct MainDashboardView: View {
                                 
                                 Text("Your Goals")
                                     .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(.black)
                                     .padding(.horizontal)
                                 
                                 LazyVStack(spacing: 18) {
@@ -213,7 +214,7 @@ extension MainDashboardView {
                     Text(goal.title)
                         .font(.system(size: 15, weight: .medium))
                         .strikethrough(goal.isCompleted, color: .gray)
-                        .foregroundColor(goal.isCompleted ? .gray : .primary)
+                        .foregroundColor(goal.isCompleted ? .gray : .black)
                     
                     Text(categoryName(for: goal))
                         .font(.system(size: 12))
