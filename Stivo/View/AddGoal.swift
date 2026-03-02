@@ -115,6 +115,7 @@ struct AddGoal: View {
         }
         .padding(20)
         .background(Color(.systemGray6).ignoresSafeArea())
+        .preferredColorScheme(.light)
         .onAppear {
             if let editing = editingGoal {
                 goalTitle = editing.title

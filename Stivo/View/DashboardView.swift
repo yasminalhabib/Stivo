@@ -31,6 +31,7 @@ struct DashboardView: View {
                             .font(.title)
                             .bold()
                             .padding(.top, 20)
+                            .foregroundColor(.black)
                         
                         ForEach(["Sport", "Work", "Finance", "Care"], id: \.self) { title in
                             NavigationLink(destination: destinationView(for: title)) {
@@ -166,6 +167,7 @@ struct ProgressRing: View {
                 Text("\(Int(progress * 100))%")
                     .font(.caption)
                     .bold()
+                    .foregroundColor(.black)
             }
             .frame(width: 60, height: 60)
         }

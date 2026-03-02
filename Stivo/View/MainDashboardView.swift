@@ -123,6 +123,7 @@ struct MainDashboardView: View {
                             
                             Text("Start your goals journey!")
                                 .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.black)
                             
                             Button {
                                 showCategoriesSheet = true
@@ -151,6 +152,7 @@ struct MainDashboardView: View {
             .sheet(isPresented: $showCategoriesSheet) {
                 CategoriesSheet()
                     .environmentObject(viewModel)
+                    .preferredColorScheme(.light)
             }
             .sheet(isPresented: $showAddGoal, onDismiss: { selectedGoal = nil }) {
                 AddGoal(goals: currentGoalsBinding, showSheet: $showAddGoal, editingGoal: $selectedGoal)

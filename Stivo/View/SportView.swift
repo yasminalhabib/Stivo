@@ -104,6 +104,7 @@ struct SportView: View {
             VStack(spacing: 8) {
                 Text("Start your goals journey!")
                     .font(.system(size: 23, weight: .bold))
+                    .foregroundColor(.black)
                 Text("All your goals, organized in one place. We're here to help you stay on track and grow ✨")
                     .font(.system(size: 16))
                     .foregroundColor(.gray)
