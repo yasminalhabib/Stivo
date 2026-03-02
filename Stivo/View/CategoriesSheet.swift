@@ -142,7 +142,7 @@ struct CategoryItem: Identifiable {
 
     static let sport   = CategoryItem(title: "Sport",   icon: "figure.run",    bg: Color(red: 0.76, green: 0.79, blue: 0.72))
     static let finance = CategoryItem(title: "Finance", icon: "creditcard.fill", bg: Color(red: 0.98, green: 0.74, blue: 0.62))
-    static let work    = CategoryItem(title: "Work",    icon: "case.fill",     bg: Color(red: 0.98, green: 0.74, blue: 0.62))
+    static let work    = CategoryItem(title: "Other",    icon: "plus.app.fill",     bg: Color(red: 0.98, green: 0.74, blue: 0.62))
     static let care    = CategoryItem(title: "Care",    icon: "camera.macro",  bg: Color(red: 0.76, green: 0.79, blue: 0.72))
 }
 
