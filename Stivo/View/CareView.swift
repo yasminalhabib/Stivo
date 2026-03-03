@@ -31,7 +31,7 @@ struct CareView: View {
                     Text("Care")
                         .font(.system(size: 26, weight: .bold))
                         .foregroundColor(Color("Color"))
-                    Text("Skin-care starts with small actions that create meaningful change")
+                    Text("Care starts with small actions that create meaningful change")
                         .font(.system(size: 16))
                         .foregroundColor(.gray)
                         .fixedSize(horizontal: false, vertical: true)
@@ -40,8 +40,8 @@ struct CareView: View {
                         .foregroundColor(.gray)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(.leading, 40)
-                .padding(.trailing, 20)
+                .padding(.leading, 30)
+                .padding(.trailing, 10)
                 .padding(.top, geo.size.width * 0.55 + 20)
                 .zIndex(1)
         
@@ -99,7 +99,10 @@ struct CareView: View {
 
     var emptyStateView: some View {
         VStack(spacing: 16) {
-            Image("girl").scaledToFit().frame(maxWidth: 280)
+            Image("girl")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 100)
             VStack(spacing: 8) {
                 Text("Start your goals journey!")
                     .font(.system(size: 23, weight: .bold))

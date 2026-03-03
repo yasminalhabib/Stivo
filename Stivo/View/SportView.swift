@@ -100,7 +100,10 @@ struct SportView: View {
     // MARK: - Empty State
     var emptyStateView: some View {
         VStack(spacing: 16) {
-            Image("girl").scaledToFit().frame(maxWidth: 280)
+            Image("girl")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 100)
             VStack(spacing: 8) {
                 Text("Start your goals journey!")
                     .font(.system(size: 23, weight: .bold))

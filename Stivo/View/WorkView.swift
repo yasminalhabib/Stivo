@@ -28,10 +28,10 @@ struct WorkView: View {
                     .frame(height: geo.size.width * 0.55)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Work")
+                    Text("Personal")
                         .font(.system(size: 26, weight: .bold))
                         .foregroundColor(Color("Color"))
-                    Text("Work-care starts with small actions that create meaningful change")
+                    Text("Your open space for everything different ideas, wishes, and goals that don’t fit elsewhere.")
                         .font(.system(size: 16))
                         .foregroundColor(.gray)
                         .fixedSize(horizontal: false, vertical: true)
@@ -99,7 +99,10 @@ struct WorkView: View {
 
     var emptyStateView: some View {
         VStack(spacing: 16) {
-            Image("girl").scaledToFit().frame(maxWidth: 280)
+            Image("girl")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 100)
             VStack(spacing: 8) {
                 Text("Start your goals journey!")
                     .font(.system(size: 23, weight: .bold))
