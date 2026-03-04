@@ -29,25 +29,34 @@ struct StoredMemory: Identifiable, Codable, Equatable {
 
 final class DashboardViewModel: ObservableObject {
 
-    // MARK: - Goals
-    @Published var sportGoals: [Goal] = []
-    @Published var workGoals: [Goal] = []
-    @Published var financeGoals: [Goal] = []
-    @Published var careGoals: [Goal] = []
-
-    // MARK: - Toggle Goals (called from any view)
-    func toggleGoal(id: UUID) {
-        toggle(in: &sportGoals, id: id)
-        toggle(in: &workGoals, id: id)
-        toggle(in: &financeGoals, id: id)
-        toggle(in: &careGoals, id: id)
-        saveAllGoals()
+    // MARK: - Goals (auto-save on every change)
+    @Published var sportGoals: [Goal] = [] {
+        didSet { save(sportGoals, forKey: "savedSportGoals") }
+    }
+    @Published var workGoals: [Goal] = [] {
+        didSet { save(workGoals, forKey: "savedWorkGoals") }
+    }
+    @Published var financeGoals: [Goal] = [] {
+        didSet { save(financeGoals, forKey: "savedFinanceGoals") }
+    }
+    @Published var careGoals: [Goal] = [] {
+        didSet { save(careGoals, forKey: "savedGoals") }
     }
 
-    private func toggle(in goals: inout [Goal], id: UUID) {
-        if let i = goals.firstIndex(where: { $0.id == id }) {
-            goals[i].isCompleted.toggle()
-        }
+    // MARK: - Toggle (used by all views)
+    func toggleGoal(id: UUID) {
+        if let i = sportGoals.firstIndex(where: { $0.id == id })   { sportGoals[i].isCompleted.toggle(); return }
+        if let i = workGoals.firstIndex(where: { $0.id == id })    { workGoals[i].isCompleted.toggle(); return }
+        if let i = financeGoals.firstIndex(where: { $0.id == id }) { financeGoals[i].isCompleted.toggle(); return }
+        if let i = careGoals.firstIndex(where: { $0.id == id })    { careGoals[i].isCompleted.toggle(); return }
+    }
+
+    // MARK: - Delete (used by all views)
+    func deleteGoal(id: UUID) {
+        sportGoals.removeAll   { $0.id == id }
+        workGoals.removeAll    { $0.id == id }
+        financeGoals.removeAll { $0.id == id }
+        careGoals.removeAll    { $0.id == id }
     }
 
     // MARK: - Add Goal
@@ -66,17 +75,6 @@ final class DashboardViewModel: ObservableObject {
         case .weekly:  weeklyActions.append(action)
         case .monthly: monthlyActions.append(action)
         }
-
-        saveAllGoals()
-    }
-
-    // MARK: - Delete Goal
-    func deleteGoal(id: UUID) {
-        sportGoals.removeAll   { $0.id == id }
-        workGoals.removeAll    { $0.id == id }
-        financeGoals.removeAll { $0.id == id }
-        careGoals.removeAll    { $0.id == id }
-        saveAllGoals()
     }
 
     // MARK: - Completion Percentages
@@ -95,7 +93,7 @@ final class DashboardViewModel: ObservableObject {
     @Published var weeklyActions: [ActionItem] = []
     @Published var monthlyActions: [ActionItem] = []
 
-    var isNewUser: Bool  { dailyActions.isEmpty && weeklyActions.isEmpty && monthlyActions.isEmpty }
+    var isNewUser: Bool     { dailyActions.isEmpty && weeklyActions.isEmpty && monthlyActions.isEmpty }
     var hasAnyActions: Bool { !dailyActions.isEmpty || !weeklyActions.isEmpty || !monthlyActions.isEmpty }
 
     var completionPercentage: Int {
@@ -117,11 +115,11 @@ final class DashboardViewModel: ObservableObject {
     func toggle(_ action: ActionItem, category: String) {
         switch category {
         case "Weekly Actions":
-            if let i = weeklyActions.firstIndex(where: { $0.id == action.id }) { weeklyActions[i].isCompleted.toggle() }
+            if let i = weeklyActions.firstIndex(where: { $0.id == action.id })  { weeklyActions[i].isCompleted.toggle() }
         case "Monthly Actions":
             if let i = monthlyActions.firstIndex(where: { $0.id == action.id }) { monthlyActions[i].isCompleted.toggle() }
         default:
-            if let i = dailyActions.firstIndex(where: { $0.id == action.id }) { dailyActions[i].isCompleted.toggle() }
+            if let i = dailyActions.firstIndex(where: { $0.id == action.id })   { dailyActions[i].isCompleted.toggle() }
         }
     }
 
@@ -187,13 +185,6 @@ final class DashboardViewModel: ObservableObject {
     }
 
     // MARK: - Persistence
-    func saveAllGoals() {
-        save(sportGoals,   forKey: "savedSportGoals")
-        save(workGoals,    forKey: "savedWorkGoals")
-        save(financeGoals, forKey: "savedFinanceGoals")
-        save(careGoals,    forKey: "savedGoals")
-    }
-
     private func save(_ goals: [Goal], forKey key: String) {
         if let data = try? JSONEncoder().encode(goals) {
             UserDefaults.standard.set(data, forKey: key)

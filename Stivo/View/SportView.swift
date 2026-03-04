@@ -44,7 +44,6 @@ struct SportView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) {
                         Color.clear.frame(height: geo.size.width * 0.55 + 160)
-
                         if viewModel.sportGoals.isEmpty {
                             emptyStateView
                         } else {
@@ -57,13 +56,6 @@ struct SportView: View {
         .sheet(isPresented: $showAddGoal) {
             AddGoal(goals: $viewModel.sportGoals, showSheet: $showAddGoal, editingGoal: $selectedGoal)
                 .presentationDetents([.large])
-        }
-        .onAppear {
-            if let d = UserDefaults.standard.data(forKey: "savedSportGoals"),
-               let decoded = try? JSONDecoder().decode([Goal].self, from: d) {
-                viewModel.sportGoals = decoded
-                if !decoded.isEmpty { hasOpenedSportBefore = true }
-            }
         }
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -80,7 +72,6 @@ struct SportView: View {
         }
     }
 
-    // MARK: - Decorative Images
     var decorativeImages: some View {
         ZStack {
             Image("Image1").scaledToFit().offset(x: -165, y: -330)
@@ -92,7 +83,6 @@ struct SportView: View {
         }
     }
 
-    // MARK: - Empty State
     var emptyStateView: some View {
         VStack(spacing: 16) {
             Image("girl").resizable().scaledToFit().frame(height: 100)
@@ -111,7 +101,6 @@ struct SportView: View {
         .padding(.bottom, 80)
     }
 
-    // MARK: - Checklist
     var checklistView: some View {
         VStack(alignment: .leading, spacing: 24) {
             goalSection(title: "Daily",   frequency: .daily)
@@ -148,13 +137,9 @@ struct SportView: View {
                                         .foregroundColor(.white)
                                         .opacity(goal.isCompleted ? 1 : 0)
                                 )
-                                .onTapGesture {
-                                    viewModel.toggleGoal(id: goal.id)
-                                }
+                                .onTapGesture { viewModel.toggleGoal(id: goal.id) }
                             if index < filtered.count - 1 {
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 2, height: 35)
+                                Rectangle().fill(Color.gray.opacity(0.3)).frame(width: 2, height: 35)
                             }
                         }
                         Text(goal.title)
@@ -168,6 +153,13 @@ struct SportView: View {
                             .onTapGesture { selectedGoal = goal; showAddGoal = true }
                     }
                     .padding(.bottom, 10)
+                    .swipeActions {
+                        Button(role: .destructive) {
+                            withAnimation { viewModel.deleteGoal(id: goal.id) }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
                 }
             }
             .padding(.bottom, 10)
