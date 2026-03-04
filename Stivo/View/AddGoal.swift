@@ -127,5 +127,13 @@ struct AddGoal: View {
 }
 
 #Preview {
-    CareView()
+    AddGoal(
+        goals: .constant([
+            Goal(title: "Read 20 pages", description: "Read daily", frequency: .daily),
+            Goal(title: "Gym", description: "3x per week", frequency: .weekly)
+        ]),
+        showSheet: .constant(true),
+        editingGoal: .constant(nil)
+    )
+    .environmentObject(DashboardViewModel())
 }
