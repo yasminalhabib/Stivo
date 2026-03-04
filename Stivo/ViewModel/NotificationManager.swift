@@ -22,7 +22,7 @@ class NotificationManager {
     // MARK: - Schedule
     func scheduleNotification(for goal: Goal) {
         let content = UNMutableNotificationContent()
-        content.title = "Reminder 💪"
+        content.title = "You set this goal for a reason. Don't stop now ⚡️"
         content.body = goal.title
         content.sound = .default
 
