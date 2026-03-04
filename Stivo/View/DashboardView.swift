@@ -10,12 +10,6 @@ import SwiftUI
 struct DashboardView: View {
     @EnvironmentObject var viewModel: DashboardViewModel
     @Environment(\.dismiss) private var dismiss
-    
-    // جلب البيانات من UserDefaults
-    @State private var sportGoals: [Goal] = []
-    @State private var workGoals: [Goal] = []
-    @State private var financeGoals: [Goal] = []
-    @State private var careGoals: [Goal] = []
 
     var body: some View {
         NavigationStack {
@@ -24,7 +18,7 @@ struct DashboardView: View {
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea()
-                
+
                 ScrollView {
                     VStack(alignment: .leading, spacing: 25) {
                         Text("Daily Actions")
@@ -32,8 +26,8 @@ struct DashboardView: View {
                             .bold()
                             .padding(.top, 20)
                             .foregroundColor(.black)
-                        
-                        ForEach(["Sport", "Work", "Finance", "Care"], id: \.self) { title in
+
+                        ForEach(["Sport", "Other", "Finance", "Care"], id: \.self) { title in
                             NavigationLink(destination: destinationView(for: title)) {
                                 ActionCard(title: title, progress: progress(for: title))
                             }
@@ -45,7 +39,7 @@ struct DashboardView: View {
                     .padding(.bottom, 50)
                 }
             }
-            .navigationBarBackButtonHidden(true) // إخفاء زر الرجوع الافتراضي
+            .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { dismiss() } label: {
@@ -59,77 +53,44 @@ struct DashboardView: View {
                 }
             }
         }
-        .onAppear {
-            loadAllGoals()
-        }
     }
-    
-    // تحديد الـ View لكل نوع
+
     @ViewBuilder
     func destinationView(for title: String) -> some View {
         switch title {
-        case "Sport":
-            SportView()
-        case "Work":
-            WorkView()
-        case "Finance":
-            FinanceView()
-        case "Care":
-            CareView()
-        default:
-            Text("No View")
+        case "Sport":   SportView()
+        case "Other":   WorkView()
+        case "Finance": FinanceView()
+        case "Care":    CareView()
+        default:        Text("No View")
         }
     }
-    
-    // حساب النسبة لكل نوع
+
     func progress(for title: String) -> Double {
         let goals: [Goal]
         switch title {
-        case "Sport": goals = sportGoals
-        case "Work": goals = workGoals
-        case "Finance": goals = financeGoals
-        case "Care": goals = careGoals
-        default: goals = []
+        case "Sport":   goals = viewModel.sportGoals
+        case "Other":   goals = viewModel.workGoals
+        case "Finance": goals = viewModel.financeGoals
+        case "Care":    goals = viewModel.careGoals
+        default:        goals = []
         }
-        
         guard !goals.isEmpty else { return 0 }
-        let completed = goals.filter { $0.isCompleted }.count
-        return Double(completed) / Double(goals.count)
-    }
-    
-    // جلب كل البيانات من UserDefaults
-    func loadAllGoals() {
-        sportGoals = loadGoals(forKey: "savedSportGoals")
-        workGoals = loadGoals(forKey: "savedWorkGoals")
-        financeGoals = loadGoals(forKey: "savedFinanceGoals")
-        careGoals = loadGoals(forKey: "savedGoals") // Care استخدم هذا المفتاح
-    }
-    
-    func loadGoals(forKey key: String) -> [Goal] {
-        if let data = UserDefaults.standard.data(forKey: key),
-           let decoded = try? JSONDecoder().decode([Goal].self, from: data) {
-            return decoded
-        }
-        return []
+        return Double(goals.filter { $0.isCompleted }.count) / Double(goals.count)
     }
 }
 
-// ====================
-// Card
-// ====================
+// MARK: - Card
 struct ActionCard: View {
-    
     var title: String
     var progress: Double
-    
+
     var body: some View {
         HStack {
             Text(title)
                 .font(.title2)
                 .foregroundColor(.white)
-            
             Spacer()
-            
             ProgressRing(progress: progress)
         }
         .padding()
@@ -139,31 +100,23 @@ struct ActionCard: View {
     }
 }
 
-// ====================
-// Progress Ring
-// ====================
+// MARK: - Progress Ring
 struct ProgressRing: View {
-    
     var progress: Double
-    
+
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color.white)
                 .frame(width: 90, height: 90)
-            
+
             ZStack {
                 Circle()
                     .stroke(Color.orange.opacity(0.3), lineWidth: 12)
-                
                 Circle()
                     .trim(from: 0, to: progress)
-                    .stroke(
-                        Color.orange,
-                        style: StrokeStyle(lineWidth: 12, lineCap: .round)
-                    )
+                    .stroke(Color.orange, style: StrokeStyle(lineWidth: 12, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                
                 Text("\(Int(progress * 100))%")
                     .font(.caption)
                     .bold()
@@ -176,5 +129,5 @@ struct ProgressRing: View {
 
 #Preview {
     DashboardView()
-        .environmentObject(DashboardViewModel()) // مهم لتجنّب الكراش في الـ Preview
+        .environmentObject(DashboardViewModel())
 }

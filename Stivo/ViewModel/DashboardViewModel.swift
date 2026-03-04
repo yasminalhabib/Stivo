@@ -28,156 +28,132 @@ struct StoredMemory: Identifiable, Codable, Equatable {
 }
 
 final class DashboardViewModel: ObservableObject {
+
+    // MARK: - Goals
     @Published var sportGoals: [Goal] = []
     @Published var workGoals: [Goal] = []
     @Published var financeGoals: [Goal] = []
     @Published var careGoals: [Goal] = []
-    
+
+    // MARK: - Toggle Goals (called from any view)
+    func toggleGoal(id: UUID) {
+        toggle(in: &sportGoals, id: id)
+        toggle(in: &workGoals, id: id)
+        toggle(in: &financeGoals, id: id)
+        toggle(in: &careGoals, id: id)
+        saveAllGoals()
+    }
+
+    private func toggle(in goals: inout [Goal], id: UUID) {
+        if let i = goals.firstIndex(where: { $0.id == id }) {
+            goals[i].isCompleted.toggle()
+        }
+    }
+
+    // MARK: - Add Goal
     func addGoal(_ goal: Goal, type: String) {
         switch type {
-        case "Sport":
-            sportGoals.append(goal)
-        case "Work":
-            workGoals.append(goal)
-        case "Finance":
-            financeGoals.append(goal)
-        case "Care":
-            careGoals.append(goal)
-        default:
-            break
+        case "Sport":   sportGoals.append(goal)
+        case "Other":   workGoals.append(goal)
+        case "Finance": financeGoals.append(goal)
+        case "Care":    careGoals.append(goal)
+        default: break
         }
-        let action = ActionItem(title: goal.title,
-                                isCompleted: goal.isCompleted,
-                                goalID: goal.id)
-        
+
+        let action = ActionItem(title: goal.title, isCompleted: goal.isCompleted, goalID: goal.id)
         switch goal.frequency {
-        case .daily:
-            dailyActions.append(action)
-        case .weekly:
-            weeklyActions.append(action)
-        case .monthly:
-            monthlyActions.append(action)
+        case .daily:   dailyActions.append(action)
+        case .weekly:  weeklyActions.append(action)
+        case .monthly: monthlyActions.append(action)
         }
+
+        saveAllGoals()
     }
-    
-    var sportCompletionPercentage: Int {
-        guard !sportGoals.isEmpty else { return 0 }
-        let done = sportGoals.filter { $0.isCompleted }.count
-        return Int((Double(done) / Double(sportGoals.count)) * 100)
+
+    // MARK: - Delete Goal
+    func deleteGoal(id: UUID) {
+        sportGoals.removeAll   { $0.id == id }
+        workGoals.removeAll    { $0.id == id }
+        financeGoals.removeAll { $0.id == id }
+        careGoals.removeAll    { $0.id == id }
+        saveAllGoals()
     }
-    
-    var workCompletionPercentage: Int {
-        guard !workGoals.isEmpty else { return 0 }
-        let done = workGoals.filter { $0.isCompleted }.count
-        return Int((Double(done) / Double(workGoals.count)) * 100)
+
+    // MARK: - Completion Percentages
+    var sportCompletionPercentage: Int   { percentage(of: sportGoals) }
+    var workCompletionPercentage: Int    { percentage(of: workGoals) }
+    var financeCompletionPercentage: Int { percentage(of: financeGoals) }
+    var careCompletionPercentage: Int    { percentage(of: careGoals) }
+
+    private func percentage(of goals: [Goal]) -> Int {
+        guard !goals.isEmpty else { return 0 }
+        return Int((Double(goals.filter { $0.isCompleted }.count) / Double(goals.count)) * 100)
     }
-    
-    var financeCompletionPercentage: Int {
-        guard !financeGoals.isEmpty else { return 0 }
-        let done = financeGoals.filter { $0.isCompleted }.count
-        return Int((Double(done) / Double(financeGoals.count)) * 100)
-    }
-    
-    var careCompletionPercentage: Int {
-        guard !careGoals.isEmpty else { return 0 }
-        let done = careGoals.filter { $0.isCompleted }.count
-        return Int((Double(done) / Double(careGoals.count)) * 100)
-    }
-    
-    var isNewUser: Bool {
-        dailyActions.isEmpty &&
-        weeklyActions.isEmpty &&
-        monthlyActions.isEmpty
-    }
-    
-    var hasAnyActions: Bool {
-        !dailyActions.isEmpty || !weeklyActions.isEmpty || !monthlyActions.isEmpty
-    }
-    
+
+    // MARK: - Actions
     @Published var dailyActions: [ActionItem] = []
     @Published var weeklyActions: [ActionItem] = []
     @Published var monthlyActions: [ActionItem] = []
-    
-    // Default progress (used by the dashboard card). Currently based on Daily Actions.
+
+    var isNewUser: Bool  { dailyActions.isEmpty && weeklyActions.isEmpty && monthlyActions.isEmpty }
+    var hasAnyActions: Bool { !dailyActions.isEmpty || !weeklyActions.isEmpty || !monthlyActions.isEmpty }
+
     var completionPercentage: Int {
-        let actions = dailyActions
-        guard !actions.isEmpty else { return 0 }
-        let done = actions.filter { $0.isCompleted }.count
-        return Int((Double(done) / Double(actions.count)) * 100)
+        guard !dailyActions.isEmpty else { return 0 }
+        return Int((Double(dailyActions.filter { $0.isCompleted }.count) / Double(dailyActions.count)) * 100)
     }
-    
-    func toggle(_ action: ActionItem, category: String) {
-        switch category {
-        case "Weekly Actions":
-            if let index = weeklyActions.firstIndex(where: { $0.id == action.id }) {
-                weeklyActions[index].isCompleted.toggle()
-            }
-        case "Monthly Actions":
-            if let index = monthlyActions.firstIndex(where: { $0.id == action.id }) {
-                monthlyActions[index].isCompleted.toggle()
-            }
-        default:
-            if let index = dailyActions.firstIndex(where: { $0.id == action.id }) {
-                dailyActions[index].isCompleted.toggle()
-            }
-        }
-    }
-    
-    func addAction(title: String, category: String) {
-        let item = ActionItem(title: title, isCompleted: false)
-        switch category {
-        case "Weekly Actions":
-            weeklyActions.append(item)
-        case "Monthly Actions":
-            monthlyActions.append(item)
-        default:
-            dailyActions.append(item)
-        }
-    }
-    
+
     func completionPercentage(for category: String) -> Int {
         let actions: [ActionItem]
         switch category {
-        case "Weekly Actions":
-            actions = weeklyActions
-        case "Monthly Actions":
-            actions = monthlyActions
-        default:
-            actions = dailyActions
+        case "Weekly Actions":  actions = weeklyActions
+        case "Monthly Actions": actions = monthlyActions
+        default:                actions = dailyActions
         }
-        
         guard !actions.isEmpty else { return 0 }
-        let done = actions.filter { $0.isCompleted }.count
-        return Int((Double(done) / Double(actions.count)) * 100)
+        return Int((Double(actions.filter { $0.isCompleted }.count) / Double(actions.count)) * 100)
     }
-    
+
+    func toggle(_ action: ActionItem, category: String) {
+        switch category {
+        case "Weekly Actions":
+            if let i = weeklyActions.firstIndex(where: { $0.id == action.id }) { weeklyActions[i].isCompleted.toggle() }
+        case "Monthly Actions":
+            if let i = monthlyActions.firstIndex(where: { $0.id == action.id }) { monthlyActions[i].isCompleted.toggle() }
+        default:
+            if let i = dailyActions.firstIndex(where: { $0.id == action.id }) { dailyActions[i].isCompleted.toggle() }
+        }
+    }
+
+    func addAction(title: String, category: String) {
+        let item = ActionItem(title: title, isCompleted: false)
+        switch category {
+        case "Weekly Actions":  weeklyActions.append(item)
+        case "Monthly Actions": monthlyActions.append(item)
+        default:                dailyActions.append(item)
+        }
+    }
+
     // MARK: - Memories
     @Published var memories: [StoredMemory] = [] {
-        didSet {
-            saveMemories()
-        }
+        didSet { saveMemories() }
     }
-    
+
     init() {
         loadMemories()
-loadAllGoals()
-
+        loadAllGoals()
     }
-    
+
     private let memoriesKey = "savedMemories_v2"
-    
+
     private func saveMemories() {
-        do {
-            let data = try JSONEncoder().encode(memories)
+        if let data = try? JSONEncoder().encode(memories) {
             UserDefaults.standard.set(data, forKey: memoriesKey)
-        } catch {
-            print("Failed to save memories: \(error)")
         }
     }
-    
+
     private func loadMemories() {
         guard let data = UserDefaults.standard.data(forKey: memoriesKey) else {
-            // Migrate from older storage if existed (array of Data)
             if let oldArray = UserDefaults.standard.object(forKey: "savedMemories") as? [Data] {
                 self.memories = oldArray.map { StoredMemory(imageData: $0, note: "") }
                 saveMemories()
@@ -185,54 +161,56 @@ loadAllGoals()
             }
             return
         }
-        do {
-            let decoded = try JSONDecoder().decode([StoredMemory].self, from: data)
-            self.memories = decoded
-        } catch {
-            print("Failed to load memories: \(error)")
-            self.memories = []
-        }
+        self.memories = (try? JSONDecoder().decode([StoredMemory].self, from: data)) ?? []
     }
-    
-    // Convenience for legacy callers: stores image with empty note
+
     func addMemory(image: UIImage) {
         guard let data = image.jpegData(compressionQuality: 0.8) else { return }
-        let stored = StoredMemory(imageData: data, note: "")
-        memories.append(stored)
+        memories.append(StoredMemory(imageData: data, note: ""))
     }
-    
-    // New APIs used by MemoryScreen
+
     func addMemory(from memory: Memory) {
         guard let data = memory.image.jpegData(compressionQuality: 0.8) else { return }
-        let stored = StoredMemory(id: memory.id, imageData: data, note: memory.note)
-        memories.append(stored)
+        memories.append(StoredMemory(id: memory.id, imageData: data, note: memory.note))
     }
-    
+
     func updateMemory(from memory: Memory) {
         guard let data = memory.image.jpegData(compressionQuality: 0.8) else { return }
-        if let index = memories.firstIndex(where: { $0.id == memory.id }) {
-            memories[index].imageData = data
-            memories[index].note = memory.note
+        if let i = memories.firstIndex(where: { $0.id == memory.id }) {
+            memories[i].imageData = data
+            memories[i].note = memory.note
         }
     }
-    
+
     func deleteMemory(id: UUID) {
         memories.removeAll { $0.id == id }
     }
-    
-    
-    func loadAllGoals() {
-        sportGoals = loadGoals(forKey: "savedSportGoals")
-        workGoals = loadGoals(forKey: "savedWorkGoals")
-        financeGoals = loadGoals(forKey: "savedFinanceGoals")
-        careGoals = loadGoals(forKey: "savedGoals")
+
+    // MARK: - Persistence
+    func saveAllGoals() {
+        save(sportGoals,   forKey: "savedSportGoals")
+        save(workGoals,    forKey: "savedWorkGoals")
+        save(financeGoals, forKey: "savedFinanceGoals")
+        save(careGoals,    forKey: "savedGoals")
     }
-    
-    private func loadGoals(forKey key: String) -> [Goal] {
-        if let data = UserDefaults.standard.data(forKey: key),
-           let decoded = try? JSONDecoder().decode([Goal].self, from: data) {
-            return decoded
+
+    private func save(_ goals: [Goal], forKey key: String) {
+        if let data = try? JSONEncoder().encode(goals) {
+            UserDefaults.standard.set(data, forKey: key)
         }
-        return []
+    }
+
+    func loadAllGoals() {
+        sportGoals   = loadGoals(forKey: "savedSportGoals")
+        workGoals    = loadGoals(forKey: "savedWorkGoals")
+        financeGoals = loadGoals(forKey: "savedFinanceGoals")
+        careGoals    = loadGoals(forKey: "savedGoals")
+    }
+
+    private func loadGoals(forKey key: String) -> [Goal] {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let decoded = try? JSONDecoder().decode([Goal].self, from: data)
+        else { return [] }
+        return decoded
     }
 }

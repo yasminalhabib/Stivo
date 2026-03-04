@@ -9,7 +9,6 @@ import SwiftUI
 struct SportView: View {
 
     @State private var showAddGoal = false
-    @State private var goals: [Goal] = []
     @State private var selectedGoal: Goal? = nil
     @AppStorage("hasOpenedSportBefore") private var hasOpenedSportBefore = false
     @EnvironmentObject var viewModel: DashboardViewModel
@@ -20,12 +19,10 @@ struct SportView: View {
             ZStack(alignment: .top) {
                 Color("background").ignoresSafeArea()
 
-                // ✅ الصور الزخرفية بالخلفية - ثابتة
                 decorativeImages
                     .frame(width: geo.size.width)
                     .allowsHitTesting(false)
 
-                // ✅ العنوان والوصف - ثابتين في مكانهم
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Sports")
                         .font(.system(size: 26, weight: .bold))
@@ -44,28 +41,30 @@ struct SportView: View {
                 .padding(.top, geo.size.width * 0.55 + 20)
                 .zIndex(1)
 
-                // ✅ المحتوى القابل للسحب (البطاقات فقط)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) {
-                        Color.clear
-                            .frame(height: geo.size.width * 0.55 + 160)
+                        Color.clear.frame(height: geo.size.width * 0.55 + 160)
 
-                        if goals.isEmpty {
+                        if viewModel.sportGoals.isEmpty {
                             emptyStateView
                         } else {
-                            checklistView
-                                .padding(.bottom, 120)
+                            checklistView.padding(.bottom, 120)
                         }
                     }
                 }
             }
         }
         .sheet(isPresented: $showAddGoal) {
-            AddGoal(goals: $goals, showSheet: $showAddGoal, editingGoal: $selectedGoal)
+            AddGoal(goals: $viewModel.sportGoals, showSheet: $showAddGoal, editingGoal: $selectedGoal)
                 .presentationDetents([.large])
         }
-        .onAppear { loadGoals() }
-        .onChange(of: goals) { _ in saveGoals(); syncGoalsToDashboard() }
+        .onAppear {
+            if let d = UserDefaults.standard.data(forKey: "savedSportGoals"),
+               let decoded = try? JSONDecoder().decode([Goal].self, from: d) {
+                viewModel.sportGoals = decoded
+                if !decoded.isEmpty { hasOpenedSportBefore = true }
+            }
+        }
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -81,18 +80,14 @@ struct SportView: View {
         }
     }
 
-    // MARK: - Decorative images
+    // MARK: - Decorative Images
     var decorativeImages: some View {
         ZStack {
             Image("Image1").scaledToFit().offset(x: -165, y: -330)
             Image("Image2").scaledToFit().offset(x: 165, y: -130)
             Image("blur1").scaledToFit().offset(y: -220)
             Image("sport")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 330)
-                .cornerRadius(16)
-                .offset(y: -230)
+                .resizable().scaledToFit().frame(width: 330).cornerRadius(16).offset(y: -230)
             Image("Image3").scaledToFit().offset(x: -120, y: -150)
         }
     }
@@ -100,26 +95,18 @@ struct SportView: View {
     // MARK: - Empty State
     var emptyStateView: some View {
         VStack(spacing: 16) {
-            Image("girl")
-                .resizable()
-                .scaledToFit()
-                .frame(height: 100)
+            Image("girl").resizable().scaledToFit().frame(height: 100)
             VStack(spacing: 8) {
                 Text("Start your goals journey!")
-                    .font(.system(size: 23, weight: .bold))
-                    .foregroundColor(.black)
+                    .font(.system(size: 23, weight: .bold)).foregroundColor(.black)
                 Text("All your goals, organized in one place. We're here to help you stay on track and grow ✨")
-                    .font(.system(size: 16))
-                    .foregroundColor(.gray)
+                    .font(.system(size: 16)).foregroundColor(.gray)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, 20)
             Button("Add your goals") { selectedGoal = nil; showAddGoal = true }
                 .frame(width: 167, height: 50)
-                .background(Color("Color"))
-                .foregroundColor(.white)
-                .cornerRadius(12)
-                .padding(.top, 8)
+                .background(Color("Color")).foregroundColor(.white).cornerRadius(12).padding(.top, 8)
         }
         .padding(.bottom, 80)
     }
@@ -127,8 +114,8 @@ struct SportView: View {
     // MARK: - Checklist
     var checklistView: some View {
         VStack(alignment: .leading, spacing: 24) {
-            goalSection(title: "Daily", frequency: .daily)
-            goalSection(title: "Weekly", frequency: .weekly)
+            goalSection(title: "Daily",   frequency: .daily)
+            goalSection(title: "Weekly",  frequency: .weekly)
             goalSection(title: "Monthly", frequency: .monthly)
         }
         .padding(.horizontal, 20)
@@ -136,23 +123,20 @@ struct SportView: View {
 
     @ViewBuilder
     func goalSection(title: String, frequency: Frequency) -> some View {
-        let filteredGoals = goals.filter { $0.frequency == frequency }
-        if !filteredGoals.isEmpty {
+        let filtered = $viewModel.sportGoals.filter { $0.wrappedValue.frequency == frequency }
+        if !filtered.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Text(title)
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.gray)
+                    Text(title).font(.system(size: 20, weight: .bold)).foregroundColor(.gray)
                     Spacer()
                     Button { selectedGoal = nil; showAddGoal = true } label: {
-                        Text("Add more goals")
-                            .font(.system(size: 14))
-                            .foregroundColor(.gray.opacity(0.8))
+                        Text("Add more goals").font(.system(size: 14)).foregroundColor(.gray.opacity(0.8))
                     }
                 }
                 .padding(.bottom, 15)
 
-                ForEach(Array(filteredGoals.enumerated()), id: \.element.id) { index, goal in
+                ForEach(filtered) { $goal in
+                    let index = filtered.firstIndex(where: { $0.id == goal.id }) ?? 0
                     HStack(alignment: .top, spacing: 15) {
                         VStack(spacing: 0) {
                             Circle()
@@ -164,8 +148,10 @@ struct SportView: View {
                                         .foregroundColor(.white)
                                         .opacity(goal.isCompleted ? 1 : 0)
                                 )
-                                .onTapGesture { toggleGoal(goal) }
-                            if index < filteredGoals.count - 1 {
+                                .onTapGesture {
+                                    viewModel.toggleGoal(id: goal.id)
+                                }
+                            if index < filtered.count - 1 {
                                 Rectangle()
                                     .fill(Color.gray.opacity(0.3))
                                     .frame(width: 2, height: 35)
@@ -174,8 +160,7 @@ struct SportView: View {
                         Text(goal.title)
                             .font(.system(size: 17))
                             .foregroundColor(.black.opacity(0.8))
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16).padding(.vertical, 12)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(Color.white)
                             .cornerRadius(12)
@@ -188,21 +173,6 @@ struct SportView: View {
             .padding(.bottom, 10)
         }
     }
-
-    func toggleGoal(_ goal: Goal) {
-        if let i = goals.firstIndex(where: { $0.id == goal.id }) { goals[i].isCompleted.toggle() }
-    }
-    func deleteGoal(_ goal: Goal) { goals.removeAll { $0.id == goal.id } }
-    func saveGoals() {
-        if let e = try? JSONEncoder().encode(goals) { UserDefaults.standard.set(e, forKey: "savedSportGoals") }
-    }
-    func loadGoals() {
-        if let d = UserDefaults.standard.data(forKey: "savedSportGoals"),
-           let decoded = try? JSONDecoder().decode([Goal].self, from: d) {
-            goals = decoded; if !decoded.isEmpty { hasOpenedSportBefore = true }
-        }
-    }
-    func syncGoalsToDashboard() { viewModel.sportGoals = goals }
 }
 
 #Preview { SportView().environmentObject(DashboardViewModel()) }
