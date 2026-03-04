@@ -9,6 +9,11 @@ import SwiftUI
 
 @main
 struct StivoApp: App {
+
+    init() {
+        NotificationManager.shared.requestPermission()
+    }
+
     var body: some Scene {
         WindowGroup {
             SplashView()

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import UserNotifications
 
 struct ActionItem: Identifiable, Equatable {
     let id = UUID()
@@ -29,21 +30,50 @@ struct StoredMemory: Identifiable, Codable, Equatable {
 
 final class DashboardViewModel: ObservableObject {
 
-    // MARK: - Goals (auto-save on every change)
+    // MARK: - Goals (auto-save + notifications on every change)
     @Published var sportGoals: [Goal] = [] {
-        didSet { save(sportGoals, forKey: "savedSportGoals") }
+        didSet {
+            save(sportGoals, forKey: "savedSportGoals")
+            handleNotifications(new: sportGoals, old: oldValue)
+        }
     }
     @Published var workGoals: [Goal] = [] {
-        didSet { save(workGoals, forKey: "savedWorkGoals") }
+        didSet {
+            save(workGoals, forKey: "savedWorkGoals")
+            handleNotifications(new: workGoals, old: oldValue)
+        }
     }
     @Published var financeGoals: [Goal] = [] {
-        didSet { save(financeGoals, forKey: "savedFinanceGoals") }
+        didSet {
+            save(financeGoals, forKey: "savedFinanceGoals")
+            handleNotifications(new: financeGoals, old: oldValue)
+        }
     }
     @Published var careGoals: [Goal] = [] {
-        didSet { save(careGoals, forKey: "savedGoals") }
+        didSet {
+            save(careGoals, forKey: "savedGoals")
+            handleNotifications(new: careGoals, old: oldValue)
+        }
     }
 
-    // MARK: - Toggle (used by all views)
+    // MARK: - Notification Handling
+    private func handleNotifications(new newGoals: [Goal], old oldGoals: [Goal]) {
+        // Cancel notifications for deleted goals
+        oldGoals
+            .filter { old in !newGoals.contains(where: { $0.id == old.id }) }
+            .forEach { NotificationManager.shared.cancelNotification(for: $0.id) }
+
+        // Schedule for new goals, reschedule for edited goals
+        for goal in newGoals {
+            if let old = oldGoals.first(where: { $0.id == goal.id }) {
+                NotificationManager.shared.rescheduleIfNeeded(newGoal: goal, oldGoal: old)
+            } else {
+                NotificationManager.shared.scheduleNotification(for: goal)
+            }
+        }
+    }
+
+    // MARK: - Toggle
     func toggleGoal(id: UUID) {
         if let i = sportGoals.firstIndex(where: { $0.id == id })   { sportGoals[i].isCompleted.toggle(); return }
         if let i = workGoals.firstIndex(where: { $0.id == id })    { workGoals[i].isCompleted.toggle(); return }
@@ -51,7 +81,7 @@ final class DashboardViewModel: ObservableObject {
         if let i = careGoals.firstIndex(where: { $0.id == id })    { careGoals[i].isCompleted.toggle(); return }
     }
 
-    // MARK: - Delete (used by all views)
+    // MARK: - Delete
     func deleteGoal(id: UUID) {
         sportGoals.removeAll   { $0.id == id }
         workGoals.removeAll    { $0.id == id }
